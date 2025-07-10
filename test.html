@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoleMatch - Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .progress {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #007bff;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .question-section {
+            margin-bottom: 30px;
+        }
+        .question-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .question-number {
+            color: #007bff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .options {
+            margin-bottom: 20px;
+        }
+        .option {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .option:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        .option.selected {
+            background: #e3f2fd;
+            border-color: #007bff;
+            color: #0056b3;
+        }
+        .option input {
+            margin-right: 10px;
+        }
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+        .result-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        .result-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .result-role {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .result-score {
+            font-size: 18px;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        .result-explanation {
+            color: #666;
+            line-height: 1.5;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RoleMatch</h1>
+            <p>Smart Role Recommender for Team Projects</p>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div id="questionSection" class="question-section">
+            <div class="question-number" id="questionNumber"></div>
+            <div class="question-title" id="questionTitle"></div>
+            <div class="options" id="options"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">Previous</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+            <button class="btn btn-primary hidden" id="submitBtn" onclick="submitAnswers()">Get Results</button>
+        </div>
+
+        <div id="results" class="results">
+            <h2>Your Role Recommendations</h2>
+            <div id="recommendationsList"></div>
+            <div class="navigation">
+                <button class="btn btn-secondary" onclick="restartTest()">Take Test Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RoleMatchEngine {
+            constructor() {
+                this.roles = {
+                    'Team Lead': {
+                        name: 'Team Lead',
+                        description: 'Coordinates team activities, manages timelines, and ensures project goals are met',
+                        skills: ['Leadership', 'Communication', 'Project Management', 'Coordination']
+                    },
+                    'RE': {
+                        name: 'Requirements Engineer',
+                        description: 'Gathers, documents, and manages project requirements and specifications',
+                        skills: ['Documentation', 'Analysis', 'Communication', 'Research']
+                    },
+                    'CM': {
+                        name: 'Configuration Manager',
+                        description: 'Manages project structure, tools, files, and development environment',
+                        skills: ['Organization', 'Tool Management', 'Version Control', 'Documentation']
+                    },
+                    'Design': {
+                        name: 'System Designer',
+                        description: 'Designs system architecture, component interactions, and technical workflows',
+                        skills: ['System Architecture', 'Logical Thinking', 'Diagramming', 'Technical Planning']
+                    },
+                    'UX': {
+                        name: 'UX Designer',
+                        description: 'Designs user interfaces, wireframes, and ensures optimal user experience',
+                        skills: ['UI Design', 'User Research', 'Prototyping', 'Visual Design']
+                    },
+                    'Test': {
+                        name: 'Quality Assurance Tester',
+                        description: 'Tests system functionality, identifies bugs, and ensures quality standards',
+                        skills: ['Testing', 'Bug Detection', 'Quality Assurance', 'Attention to Detail']
+                    }
+                };
+
+                this.questions = [
+                    {
+                        id: 1,
+                        text: "Which of these roles sounds most enjoyable to you?",
+                        type: "preference",
+                        weight: 3.0,
+                        options: [
+                            { text: "Leading teams and keeping everyone on track", scores: { 'Team Lead': 3 } },
+                            { text: "Writing clear instructions or outlining requirements", scores: { 'RE': 3 } },
+                            { text: "Organizing tools, files, and project structure", scores: { 'CM': 3 } },
+                            { text: "Planning how system parts connect and work together", scores: { 'Design': 3 } },
+                            { text: "Designing user interfaces and improving usability", scores: { 'UX': 3 } },
+                            { text: "Testing and making sure things work correctly", scores: { 'Test': 3 } }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        text: "If you had to pick a role for a group project, which one would you take first?",
+                        type: "preference",
+                        weight: 2.5,
+                        options: [
+                            { text: "Coordinator and team lead", scores: { 'Team Lead': 3 } },
+                            { text: "Requirement writer or researcher", scores: { 'RE': 3 } },
+                            { text: "Repository/file manager", scores: { 'CM': 3 } },
+                            { text: "Systems planner or diagram designer", scores: { 'Design': 3 } },
+                            { text: "Interface or layout designer", scores: { 'UX': 3 } },
+                            { text: "Tester or debugger", scores: { 'Test': 3 } }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        text: "Which of these work styles describes you best?",
+                        type: "personality",
+                        weight: 2.0,
+                        options: [
+                            { text: "I like working alone and being detail-focused", scores: { 'Test': 2, 'CM': 1 } },
+                            { text: "I like working collaboratively and sharing ideas", scores: { 'Team Lead': 2, 'RE': 1 } },
+                            { text: "I prefer creative and visual tasks", scores: { 'UX': 2, 'Design': 1 } },
+                            { text: "I enjoy organizing and structuring things", scores: { 'CM': 2, 'Team Lead': 1 } }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        text: "What would you most enjoy improving or learning about?",
+                        type: "interest",
+                        weight: 1.5,
+                        options: [
+                            { text: "Leadership and communication", scores: { 'Team Lead': 2 } },
+                            { text: "Writing requirements or specs", scores: { 'RE': 2 } },
+                            { text: "Managing shared tools/files", scores: { 'CM': 2 } },
+                            { text: "Designing system architecture", scores: { 'Design': 2 } },
+                            { text: "UI/UX design and accessibility", scores: { 'UX': 2 } },
+                            { text: "Testing and quality control", scores: { 'Test': 2 } }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        text: "Which of these describe your interests? (Select all that apply)",
+                        type: "interest",
+                        weight: 1.0,
+                        multiple: true,
+                        options: [
+                            { text: "Coordinating people and planning team work", scores: { 'Team Lead': 1 } },
+                            { text: "Writing instructions or organizing project ideas", scores: { 'RE': 1 } },
+                            { text: "Keeping track of files, folders, and shared materials", scores: { 'CM': 1 } },
+                            { text: "Planning how different features or parts of a system work together", scores: { 'Design': 1 } },
+                            { text: "Designing how a page, form, or interface should look and feel", scores: { 'UX': 1 } },
+                            { text: "Trying to find problems or mistakes in systems or features", scores: { 'Test': 1 } }
+                        ]
+                    }
+                ];
+            }
+
+            calculateScores(answers) {
+                const scores = {};
+                Object.keys(this.roles).forEach(role => {
+                    scores[role] = 0;
+                });
+
+                answers.forEach(answer => {
+                    const question = this.questions.find(q => q.id === answer.questionId);
+                    if (!question) return;
+
+                    const selectedOptions = Array.isArray(answer.selectedOptions) 
+                        ? answer.selectedOptions 
+                        : [answer.selectedOptions];
+
+                    selectedOptions.forEach(optionIndex => {
+                        const option = question.options[optionIndex];
+                        if (option && option.scores) {
+                            Object.entries(option.scores).forEach(([role, points]) => {
+                                scores[role] += points * question.weight;
+                            });
+                        }
+                    });
+                });
+
+                return scores;
+            }
+
+            normalizeScores(rawScores) {
+                const maxScore = Math.max(...Object.values(rawScores));
+                const normalizedScores = {};
+                
+                Object.entries(rawScores).forEach(([role, score]) => {
+                    normalizedScores[role] = maxScore > 0 ? (score / maxScore) * 100 : 0;
+                });
+
+                return normalizedScores;
+            }
+
+            generateExplanation(role, score) {
+                const roleInfo = this.roles[role];
+                return `Based on your responses, you show strong alignment with the ${roleInfo.name} role. ${roleInfo.description} Key skills: ${roleInfo.skills.join(', ')}.`;
+            }
+
+            getRecommendations(userAnswers) {
+                const rawScores = this.calculateScores(userAnswers);
+                const normalizedScores = this.normalizeScores(rawScores);
+                
+                const filteredScores = {};
+                Object.entries(normalizedScores).forEach(([role, score]) => {
+                    if (score >= 20) {
+                        filteredScores[role] = score;
+                    }
+                });
+
+                const sortedRoles = Object.entries(filteredScores)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3);
+
+                const recommendations = sortedRoles.map(([role, score], index) => ({
+                    rank: index + 1,
+                    role: role,
+                    score: Math.round(score),
+                    explanation: this.generateExplanation(role, score),
+                    roleInfo: this.roles[role]
+                }));
+
+                return { recommendations, rawScores, normalizedScores: filteredScores };
+            }
+        }
+
+        const engine = new RoleMatchEngine();
+        let currentQuestion = 0;
+        let answers = [];
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / engine.questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function displayQuestion() {
+            const question = engine.questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1} of ${engine.questions.length}`;
+            document.getElementById('questionTitle').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.onclick = () => selectOption(index, question.multiple);
+                
+                const input = document.createElement('input');
+                input.type = question.multiple ? 'checkbox' : 'radio';
+                input.name = 'answer';
+                input.value = index;
+                input.id = `option${index}`;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `option${index}`;
+                label.textContent = option.text;
+                
+                optionDiv.appendChild(input);
+                optionDiv.appendChild(label);
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            loadPreviousAnswer();
+            updateProgress();
+            updateButtons();
+        }
+
+        function selectOption(index, isMultiple) {
+            const option = document.getElementById(`option${index}`);
+            const optionDiv = option.parentElement;
+            
+            if (isMultiple) {
+                option.checked = !option.checked;
+                optionDiv.classList.toggle('selected', option.checked);
+            } else {
+                document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                document.querySelectorAll('input[name="answer"]').forEach(inp => inp.checked = false);
+                option.checked = true;
+                optionDiv.classList.add('selected');
+            }
+            
+            saveCurrentAnswer();
+            updateButtons();
+        }
+
+        function saveCurrentAnswer() {
+            const question = engine.questions[currentQuestion];
+            const selectedInputs = document.querySelectorAll('input[name="answer"]:checked');
+            
+            if (selectedInputs.length > 0) {
+                const selectedOptions = Array.from(selectedInputs).map(input => parseInt(input.value));
+                
+                const existingAnswerIndex = answers.findIndex(a => a.questionId === question.id);
+                const newAnswer = {
+                    questionId: question.id,
+                    selectedOptions: question.multiple ? selectedOptions : selectedOptions[0]
+                };
+                
+                if (existingAnswerIndex !== -1) {
+                    answers[existingAnswerIndex] = newAnswer;
+                } else {
+                    answers.push(newAnswer);
+                }
+            }
+        }
+
+        function loadPreviousAnswer() {
+            const question = engine.questions[currentQuestion];
+            const existingAnswer = answers.find(a => a.questionId === question.id);
+            
+            if (existingAnswer) {
+                const selectedOptions = Array.isArray(existingAnswer.selectedOptions) 
+                    ? existingAnswer.selectedOptions 
+                    : [existingAnswer.selectedOptions];
+                
+                selectedOptions.forEach(optionIndex => {
+                    const option = document.getElementById(`option${optionIndex}`);
+                    if (option) {
+                        option.checked = true;
+                        option.parentElement.classList.add('selected');
+                    }
+                });
+            }
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            
+            const hasAnswer = document.querySelectorAll('input[name="answer"]:checked').length > 0;
+            
+            if (currentQuestion === engine.questions.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+                submitBtn.disabled = !hasAnswer;
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+                nextBtn.disabled = !hasAnswer;
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < engine.questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                displayQuestion();
+            }
+        }
+
+        function submitAnswers() {
+            const result = engine.getRecommendations(answers);
+            displayResults(result);
+        }
+
+        function displayResults(result) {
+            document.getElementById('questionSection').style.display = 'none';
+            document.querySelector('.navigation').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            
+            result.recommendations.forEach(recommendation => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="result-rank">#${recommendation.rank}</div>
+                    <div class="result-role">${recommendation.role}</div>
+                    <div class="result-score">${recommendation.score}% Match</div>
+                    <div class="result-explanation">${recommendation.explanation}</div>
+                `;
+                recommendationsList.appendChild(card);
+            });
+        }
+
+        function restartTest() {
+            currentQuestion = 0;
+            answers = [];
+            document.getElementById('questionSection').style.display = 'block';
+            document.querySelector('.navigation').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            displayQuestion();
+        }
+
+        displayQuestion();
+    </script>
+</body>
+</html>
