@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 
