@@ -810,7 +810,8 @@ const RoleMatch = () => {
             <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
               <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Mission</h2>
               <p className="text-lg leading-relaxed" style={{ color: theme.onSurfaceVariant }}>
-                RoleMatch is designed to revolutionize team formation by matching individuals to their optimal project roles. 
+                RoleMatch is a smart role recommendation system created for CS673 Software Engineering course. 
+                It's designed to revolutionize team formation by matching individuals to their optimal project roles. 
                 We believe that when people work in roles that align with their skills, interests, and working style, 
                 teams become more productive, creative, and successful.
               </p>
@@ -872,32 +873,13 @@ const RoleMatch = () => {
                 RoleMatch was created by a dedicated team of students passionate about improving team dynamics:
               </p>
               <ul className="team-list" style={{ color: theme.onSurfaceVariant }}>
-                <li>• <strong>Yuqing Zheng</strong> - UX Developer, Back-end Lead</li>
-                <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
-                <li>• <strong>Brady Wu</strong> - Software Tester, Test Lead</li>
                 <li>• <strong>Gagan Veginati</strong> - Software Designer, Front-end Lead</li>
+                <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
+                <li>• <strong>Yuqing Zheng</strong> - UX Developer, Back-end Lead</li>
+                <li>• <strong>Brady Wu</strong> - Software Tester, Test Lead</li>
                 <li>• <strong>Paul Mulroney</strong> - Project Manager, Requirements Lead</li>
               </ul>
             </section>
-
-            <div className="text-center pt-8">
-              <button
-                onClick={() => setCurrentPage('quiz')}
-                className="cta-button"
-                style={{ 
-                  backgroundColor: theme.primary,
-                  color: theme.onPrimary,
-                  boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
-                  padding: '16px 32px',
-                  borderRadius: '9999px',
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Start Your Assessment
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -942,17 +924,11 @@ const RoleMatch = () => {
           line-height: 1.6;
         }
         
-        .cta-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 40px rgba(0, 100, 149, 0.4) !important;
-        }
-        
         .space-y-4 > * + * { margin-top: 1rem; }
         .space-y-8 > * + * { margin-top: 2rem; }
         .font-semibold { font-weight: 600; }
         .mb-1 { margin-bottom: 0.25rem; }
         .mb-4 { margin-bottom: 1rem; }
-        .pt-8 { padding-top: 2rem; }
         .leading-relaxed { line-height: 1.625; }
       `}</style>
     </div>
