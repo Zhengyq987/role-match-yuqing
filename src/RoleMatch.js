@@ -980,8 +980,29 @@ const RoleMatch = () => {
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <button
               onClick={() => setCurrentPage('landing')}
-              className="flex items-center gap-2 text-lg font-semibold"
-              style={{ color: theme.primary }}
+              className="home-button"
+              style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                backgroundColor: theme.elevation1,
+                color: theme.primary,
+                fontSize: '18px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = theme.primaryContainer;
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = theme.elevation1;
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             >
               <Home size={20} />
               RoleMatch
@@ -1066,9 +1087,6 @@ const RoleMatch = () => {
 
             <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
               <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Team</h2>
-              <p className="text-lg mb-4" style={{ color: theme.onSurfaceVariant }}>
-                RoleMatch was created by a dedicated team of students passionate about improving team dynamics:
-              </p>
               <ul className="team-list" style={{ color: theme.onSurfaceVariant }}>
                 <li>• <strong>Gagan Veginati</strong> - Software Designer and Developer, Front-end Lead</li>
                 <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
