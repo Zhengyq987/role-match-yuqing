@@ -541,7 +541,7 @@ const RoleMatch = () => {
                 }}>Team Role</span>
               </h2>
               <p className="text-xl mb-8" style={{ color: theme.onSurfaceVariant }}>
-                Discover where you'll thrive in your next project with our intelligent role matching system
+                Discover where you'll thrive in your next software engineering project with our intelligent role matching system
               </p>
             </div>
 
@@ -592,8 +592,10 @@ const RoleMatch = () => {
                 <h3 style={{ color: theme.onSurface }}>Accurate Matching</h3>
                 <p style={{ color: theme.onSurfaceVariant }}>Smart algorithm analyzes your skills and preferences</p>
               </div>
+            </div>
 
-              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+              <div className="feature-card" style={{ backgroundColor: theme.elevation1, maxWidth: '320px' }}>
                 <div className="feature-icon" style={{ backgroundColor: theme.tertiaryContainer }}>
                   <Users size={24} style={{ color: theme.onTertiaryContainer }} />
                 </div>
@@ -700,9 +702,18 @@ const RoleMatch = () => {
         
         .features-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(2, 1fr);
           gap: 24px;
           margin-top: 80px;
+          max-width: 640px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        
+        @media (max-width: 640px) {
+          .features-grid {
+            grid-template-columns: 1fr;
+          }
         }
         
         .feature-card {
@@ -873,7 +884,7 @@ const RoleMatch = () => {
                 RoleMatch was created by a dedicated team of students passionate about improving team dynamics:
               </p>
               <ul className="team-list" style={{ color: theme.onSurfaceVariant }}>
-                <li>• <strong>Gagan Veginati</strong> - Software Designer, Front-end Lead</li>
+                <li>• <strong>Gagan Veginati</strong> - Software Designer and Developer, Front-end Lead</li>
                 <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
                 <li>• <strong>Yuqing Zheng</strong> - UX Developer, Back-end Lead</li>
                 <li>• <strong>Brady Wu</strong> - Software Tester, Test Lead</li>
