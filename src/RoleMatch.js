@@ -447,8 +447,194 @@ const RoleMatch = () => {
   };
 
   const exportToPDF = () => {
-    // For React component in Claude, we'll show an alert
-    alert("PDF export requires jsPDF library. In production, this would generate a beautiful PDF with your results!");
+    if (!results) return;
+    
+    // Create a new window with printable content
+    const printWindow = window.open('', '_blank');
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>RoleMatch Results - ${new Date().toLocaleDateString()}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+            
+            body {
+              font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+              margin: 0;
+              padding: 40px;
+              background: #ffffff;
+              color: #1a1c1e;
+              line-height: 1.6;
+            }
+            
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #e5e7eb;
+            }
+            
+            .header h1 {
+              color: #006495;
+              font-size: 36px;
+              margin: 0 0 10px 0;
+            }
+            
+            .header p {
+              color: #6b7280;
+              font-size: 16px;
+              margin: 0;
+            }
+            
+            .result-card {
+              background: #f9fafb;
+              border-radius: 16px;
+              padding: 24px;
+              margin-bottom: 24px;
+              border: 1px solid #e5e7eb;
+              page-break-inside: avoid;
+            }
+            
+            .result-header {
+              display: flex;
+              align-items: center;
+              margin-bottom: 16px;
+            }
+            
+            .rank-circle {
+              width: 48px;
+              height: 48px;
+              background: #006495;
+              color: white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 24px;
+              font-weight: bold;
+              margin-right: 16px;
+            }
+            
+            .role-info h2 {
+              margin: 0;
+              color: #1a1c1e;
+              font-size: 24px;
+            }
+            
+            .match-percentage {
+              color: #006495;
+              font-weight: 600;
+              font-size: 18px;
+              margin: 4px 0 0 0;
+            }
+            
+            .description {
+              color: #4b5563;
+              margin: 16px 0;
+              font-style: italic;
+            }
+            
+            .explanation {
+              color: #1a1c1e;
+              margin: 16px 0;
+            }
+            
+            .skills {
+              margin-top: 16px;
+            }
+            
+            .skills-label {
+              font-weight: 600;
+              color: #1a1c1e;
+              margin-bottom: 8px;
+            }
+            
+            .skill-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+            }
+            
+            .skill-tag {
+              background: #e5e7eb;
+              color: #374151;
+              padding: 6px 16px;
+              border-radius: 20px;
+              font-size: 14px;
+            }
+            
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #e5e7eb;
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+            }
+            
+            @media print {
+              body {
+                padding: 20px;
+              }
+              
+              .result-card {
+                page-break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>RoleMatch Results</h1>
+            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</p>
+          </div>
+          
+          ${results.recommendations.map(rec => `
+            <div class="result-card">
+              <div class="result-header">
+                <div class="rank-circle">${rec.rank}</div>
+                <div class="role-info">
+                  <h2>${rec.roleInfo.name}</h2>
+                  <p class="match-percentage">${rec.score}% Match</p>
+                </div>
+              </div>
+              
+              <p class="description">${rec.roleInfo.description}</p>
+              <p class="explanation">${rec.explanation}</p>
+              
+              <div class="skills">
+                <p class="skills-label">Key Skills:</p>
+                <div class="skill-tags">
+                  ${rec.roleInfo.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+          
+          <div class="footer">
+            <p>RoleMatch - Smart Role Recommender for CS673 Software Engineering</p>
+            <p>Find your perfect team role at rolematch.app</p>
+          </div>
+          
+          <script>
+            // Auto-trigger print dialog
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   const shareResults = () => {
