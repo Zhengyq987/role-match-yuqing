@@ -1,50 +1,114 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube } from 'lucide-react';
 
 const RoleMatch = () => {
+  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'quiz', 'results'
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [shareNotification, setShareNotification] = useState('');
 
-  // Role definitions (excluding Team Lead as per requirements)
+  // Material 3 Color Scheme
+  const colors = {
+    light: {
+      primary: '#006495',
+      onPrimary: '#ffffff',
+      primaryContainer: '#c9e6ff',
+      onPrimaryContainer: '#001e31',
+      secondary: '#525f6e',
+      onSecondary: '#ffffff',
+      secondaryContainer: '#d5e3f5',
+      onSecondaryContainer: '#0f1c29',
+      tertiary: '#6a5778',
+      onTertiary: '#ffffff',
+      tertiaryContainer: '#f2daff',
+      onTertiaryContainer: '#251432',
+      error: '#ba1a1a',
+      background: '#fdfcff',
+      onBackground: '#1a1c1e',
+      surface: '#fdfcff',
+      onSurface: '#1a1c1e',
+      surfaceVariant: '#dfe2eb',
+      onSurfaceVariant: '#43474e',
+      outline: '#73777f',
+      outlineVariant: '#c3c6cf',
+      elevation1: 'rgba(0, 0, 0, 0.05)',
+      elevation2: 'rgba(0, 0, 0, 0.08)',
+      elevation3: 'rgba(0, 0, 0, 0.11)',
+    },
+    dark: {
+      primary: '#8cccff',
+      onPrimary: '#003450',
+      primaryContainer: '#004b71',
+      onPrimaryContainer: '#c9e6ff',
+      secondary: '#b9c7d9',
+      onSecondary: '#24323f',
+      secondaryContainer: '#3a4856',
+      onSecondaryContainer: '#d5e3f5',
+      tertiary: '#d5bee5',
+      onTertiary: '#3a2948',
+      tertiaryContainer: '#52405f',
+      onTertiaryContainer: '#f2daff',
+      error: '#ffb4ab',
+      background: '#1a1c1e',
+      onBackground: '#e2e2e6',
+      surface: '#1a1c1e',
+      onSurface: '#e2e2e6',
+      surfaceVariant: '#43474e',
+      onSurfaceVariant: '#c3c6cf',
+      outline: '#8d9199',
+      outlineVariant: '#43474e',
+      elevation1: 'rgba(255, 255, 255, 0.05)',
+      elevation2: 'rgba(255, 255, 255, 0.08)',
+      elevation3: 'rgba(255, 255, 255, 0.11)',
+    }
+  };
+
+  const theme = darkMode ? colors.dark : colors.light;
+
+  // Role definitions with updated icons
   const roles = {
     RE: {
       name: "Requirements Engineer",
       description: "Gathers and documents project requirements, writes specifications",
       skills: ["Documentation", "Analysis", "Communication", "Research"],
-      color: "from-blue-500 to-cyan-500"
+      icon: <Sparkles size={32} />,
+      gradient: { from: theme.primary, to: theme.secondary }
     },
     CM: {
       name: "Configuration Manager",
       description: "Manages tools, files, versions, and project structure",
       skills: ["Organization", "Version Control", "Tool Management", "Documentation"],
-      color: "from-green-500 to-emerald-500"
+      icon: <Settings size={32} />,
+      gradient: { from: theme.secondary, to: theme.tertiary }
     },
     Design: {
       name: "System Designer",
       description: "Plans system architecture and component interactions",
       skills: ["Architecture", "Diagramming", "System Planning", "Technical Design"],
-      color: "from-purple-500 to-pink-500"
+      icon: <Code size={32} />,
+      gradient: { from: theme.tertiary, to: theme.primary }
     },
     UX: {
       name: "UX Designer",
       description: "Designs user interfaces and improves user experience",
       skills: ["UI Design", "Prototyping", "User Research", "Visual Design"],
-      color: "from-pink-500 to-rose-500"
+      icon: <Palette size={32} />,
+      gradient: { from: theme.primary, to: theme.tertiary }
     },
     Test: {
       name: "QA Tester",
       description: "Ensures quality through testing and bug detection",
       skills: ["Testing", "Debugging", "Quality Assurance", "Attention to Detail"],
-      color: "from-orange-500 to-red-500"
+      icon: <TestTube size={32} />,
+      gradient: { from: theme.secondary, to: theme.primary }
     }
   };
 
-  // All 12 questions with proper scoring
+  // Questions data
   const questions = [
     {
       id: 1,
@@ -277,11 +341,13 @@ const RoleMatch = () => {
   };
 
   const handleAnswer = (answer) => {
-    setIsAnimating(true);
     const question = questions[currentQuestion];
     
     if (question.type === 'single') {
+      setShowWarning(false);
+      setIsAnimating(true);
       setAnswers({ ...answers, [question.id]: answer });
+      
       setTimeout(() => {
         if (currentQuestion < questions.length - 1) {
           setCurrentQuestion(currentQuestion + 1);
@@ -308,16 +374,27 @@ const RoleMatch = () => {
         [question.id]: [...currentAnswers, optionIndex]
       });
     }
+    setShowWarning(false);
   };
 
   const nextQuestion = () => {
     const question = questions[currentQuestion];
-    if (question.type === 'multiple' && (!answers[question.id] || answers[question.id].length === 0)) {
-      alert("Please select at least one option");
+    
+    // Validation for single choice questions
+    if (question.type === 'single' && answers[question.id] === undefined) {
+      setShowWarning(true);
       return;
     }
     
+    // Validation for multiple choice questions
+    if (question.type === 'multiple' && (!answers[question.id] || answers[question.id].length === 0)) {
+      setShowWarning(true);
+      return;
+    }
+    
+    setShowWarning(false);
     setIsAnimating(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
@@ -330,6 +407,7 @@ const RoleMatch = () => {
 
   const prevQuestion = () => {
     if (currentQuestion > 0) {
+      setShowWarning(false);
       setIsAnimating(true);
       setTimeout(() => {
         setCurrentQuestion(currentQuestion - 1);
@@ -341,14 +419,15 @@ const RoleMatch = () => {
   const submitAnswers = () => {
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
-    setShowResults(true);
+    setCurrentPage('results');
   };
 
   const restart = () => {
     setCurrentQuestion(0);
     setAnswers({});
-    setShowResults(false);
     setResults(null);
+    setShowWarning(false);
+    setCurrentPage('quiz');
   };
 
   const exportToCSV = () => {
@@ -368,382 +447,455 @@ const RoleMatch = () => {
   };
 
   const exportToPDF = () => {
-  const doc = new jsPDF();
-  
-  // Add background color for header
-  doc.setFillColor(99, 102, 241); // Purple color
-  doc.rect(0, 0, 210, 40, 'F');
-  
-  // Add title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(28);
-  doc.setFont(undefined, 'bold');
-  doc.text('RoleMatch Results', 105, 25, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  // Add date and subtitle
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'normal');
-  doc.text(`Generated on ${new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })}`, 105, 50, { align: 'center' });
-  
-  // Add a line separator
-  doc.setDrawColor(200, 200, 200);
-  doc.line(20, 60, 190, 60);
-  
-  // Add recommendations
-  let yPosition = 75;
-  
-  results.recommendations.forEach((rec, index) => {
-    // Check if we need a new page
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
+    // For React component in Claude, we'll show an alert
+    alert("PDF export requires jsPDF library. In production, this would generate a beautiful PDF with your results!");
+  };
+
+  const shareResults = () => {
+    if (!results) return;
+    
+    const text = `My RoleMatch Results:\n\n${results.recommendations.map(rec => 
+      `${rec.rank}. ${rec.roleInfo.name} (${rec.score}% match)`
+    ).join('\n')}\n\nDiscover your perfect team role at RoleMatch!`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'RoleMatch Results',
+        text: text,
+        url: 'https://rolematch.app'
+      }).then(() => {
+        setShareNotification('Results shared successfully!');
+        setTimeout(() => setShareNotification(''), 3000);
+      }).catch(err => {
+        if (err.name !== 'AbortError') {
+          copyToClipboard(text);
+        }
+      });
+    } else {
+      copyToClipboard(text);
     }
-    
-    // Rank circle
-    doc.setFillColor(99, 102, 241);
-    doc.circle(30, yPosition, 8, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text(rec.rank.toString(), 30, yPosition + 1, { align: 'center' });
-    
-    // Role name and percentage
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(18);
-    doc.text(rec.roleInfo.name, 45, yPosition);
-    
-    doc.setFontSize(14);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`${rec.score}% Match`, 45, yPosition + 8);
-    
-    // Role description
-    doc.setFontSize(11);
-    doc.setTextColor(60, 60, 60);
-    doc.setFont(undefined, 'italic');
-    const descLines = doc.splitTextToSize(rec.roleInfo.description, 140);
-    doc.text(descLines, 45, yPosition + 16);
-    
-    // Explanation
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(0, 0, 0);
-    const explainLines = doc.splitTextToSize(rec.explanation, 140);
-    doc.text(explainLines, 45, yPosition + 16 + (descLines.length * 5) + 5);
-    
-    // Skills
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('Key Skills:', 45, yPosition + 16 + (descLines.length * 5) + (explainLines.length * 5) + 10);
-    
-    doc.setFont(undefined, 'normal');
-    const skillsText = rec.roleInfo.skills.join(' • ');
-    doc.text(skillsText, 45, yPosition + 16 + (descLines.length * 5) + (explainLines.length * 5) + 16);
-    
-    // Add separator line
-    yPosition += 16 + (descLines.length * 5) + (explainLines.length * 5) + 25;
-    if (index < results.recommendations.length - 1) {
-      doc.setDrawColor(220, 220, 220);
-      doc.line(40, yPosition, 170, yPosition);
-      yPosition += 10;
-    }
-  });
-  
-  // Add footer
-  doc.setFontSize(10);
-  doc.setTextColor(150, 150, 150);
-  doc.text('RoleMatch - Smart Role Recommender', 105, 285, { align: 'center' });
+  };
 
-  // Save the PDF
-  doc.save('rolematch-results.pdf');
-};
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setShareNotification('Results copied to clipboard!');
+      setTimeout(() => setShareNotification(''), 3000);
+    }).catch(() => {
+      setShareNotification('Unable to share results');
+      setTimeout(() => setShareNotification(''), 3000);
+    });
+  };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  // Landing Page Component
+  const LandingPage = () => (
+    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+      <div className="relative overflow-hidden">
+        {/* Animated background shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="blob blob-1" style={{ backgroundColor: theme.primary }}></div>
+          <div className="blob blob-2" style={{ backgroundColor: theme.secondary }}></div>
+          <div className="blob blob-3" style={{ backgroundColor: theme.tertiary }}></div>
+        </div>
 
-  if (showResults && results) {
-    return (
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-500`}>
-        <div className="relative overflow-hidden">
-          {/* Animated background */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
-          </div>
-
-          <div className="relative z-10 container mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-              <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Your Results
-              </h1>
-              <div className="flex gap-4">
+        <div className="relative z-10">
+          {/* Navigation */}
+          <nav className="px-6 py-4">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>RoleMatch</h1>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setCurrentPage('about')}
+                  className="nav-button px-4 py-2 rounded-full transition-all"
+                  style={{ color: theme.onSurfaceVariant }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = theme.elevation1}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                  About
+                </button>
                 <button
                   onClick={() => setDarkMode(!darkMode)}
-                  className={`p-3 rounded-full ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-700'} hover:scale-110 transition-all`}
+                  className="theme-toggle p-3 rounded-full transition-all"
+                  style={{ 
+                    backgroundColor: theme.elevation1,
+                    color: darkMode ? theme.tertiary : theme.primary,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
                 >
                   {darkMode ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
-                <button
-                  onClick={restart}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <RefreshCw size={20} />
-                  Retake Quiz
-                </button>
+              </div>
+            </div>
+          </nav>
+
+          {/* Hero Section */}
+          <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+            <div className="mb-8">
+              <h2 className="text-6xl font-bold mb-6" style={{ color: theme.onBackground }}>
+                Find Your Perfect<br />
+                <span className="gradient-text" style={{ 
+                  background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'inline-block'
+                }}>Team Role</span>
+              </h2>
+              <p className="text-xl mb-8" style={{ color: theme.onSurfaceVariant }}>
+                Discover where you'll thrive in your next project with our intelligent role matching system
+              </p>
+            </div>
+
+            <button
+              onClick={() => setCurrentPage('quiz')}
+              className="primary-button group"
+              style={{ 
+                backgroundColor: theme.primary,
+                color: theme.onPrimary,
+                boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                padding: '16px 32px',
+                borderRadius: '9999px',
+                fontSize: '18px',
+                fontWeight: '600',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'all 0.3s ease',
+                transform: 'translateY(0)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
+              }}
+            >
+              Start Assessment
+              <ArrowRight size={20} className="arrow-icon" />
+            </button>
+
+            {/* Features */}
+            <div className="features-grid">
+              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
+                <div className="feature-icon" style={{ backgroundColor: theme.primaryContainer }}>
+                  <Zap size={24} style={{ color: theme.onPrimaryContainer }} />
+                </div>
+                <h3 style={{ color: theme.onSurface }}>Quick & Easy</h3>
+                <p style={{ color: theme.onSurfaceVariant }}>Complete the assessment in under 5 minutes</p>
+              </div>
+
+              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
+                <div className="feature-icon" style={{ backgroundColor: theme.secondaryContainer }}>
+                  <Target size={24} style={{ color: theme.onSecondaryContainer }} />
+                </div>
+                <h3 style={{ color: theme.onSurface }}>Accurate Matching</h3>
+                <p style={{ color: theme.onSurfaceVariant }}>Smart algorithm analyzes your skills and preferences</p>
+              </div>
+
+              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
+                <div className="feature-icon" style={{ backgroundColor: theme.tertiaryContainer }}>
+                  <Users size={24} style={{ color: theme.onTertiaryContainer }} />
+                </div>
+                <h3 style={{ color: theme.onSurface }}>Better Teams</h3>
+                <p style={{ color: theme.onSurfaceVariant }}>Build stronger, more effective project teams</p>
               </div>
             </div>
 
-            {/* Results Cards */}
-            <div className="grid gap-6 mb-8">
-              {results.recommendations.map((rec, index) => (
-                <div
-                  key={rec.role}
-                  className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 shadow-xl hover:scale-[1.02] transition-all duration-300`}
-                  style={{
-                    animation: `slideInUp 0.5s ease-out ${index * 0.1}s both`
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${rec.roleInfo.color} flex items-center justify-center text-white font-bold text-2xl`}>
-                          {rec.rank}
-                        </div>
-                        <div>
-                          <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {rec.roleInfo.name}
-                          </h3>
-                          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {rec.score}% Match
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {rec.explanation}
-                      </p>
-                      
-                      <p className={`mb-4 italic ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {rec.roleInfo.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        {rec.roleInfo.skills.map(skill => (
-                          <span
-                            key={skill}
-                            className={`px-3 py-1 rounded-full text-sm ${
-                              darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="ml-6">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-24 h-24 transform -rotate-90">
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="36"
-                            stroke={darkMode ? '#374151' : '#e5e7eb'}
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="36"
-                            stroke="url(#gradient)"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${2 * Math.PI * 36}`}
-                            strokeDashoffset={`${2 * Math.PI * 36 * (1 - rec.score / 100)}`}
-                            className="transition-all duration-1000"
-                          />
-                          <defs>
-                            <linearGradient id="gradient">
-                              <stop offset="0%" stopColor="#8b5cf6" />
-                              <stop offset="100%" stopColor="#ec4899" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {rec.score}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Export Options */}
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 shadow-xl`}>
-              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Export Your Results
+            {/* Role Preview */}
+            <div className="mt-20">
+              <h3 className="text-2xl font-semibold mb-8" style={{ color: theme.onSurface }}>
+                Discover Your Role Among
               </h3>
-              <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={exportToCSV}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Download size={20} />
-                  Download CSV
-                </button>
-                <button
-                  onClick={exportToPDF}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Download size={20} />
-                  Download PDF
-                </button>
-                <button
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Share2 size={20} />
-                  Share Results
-                </button>
+              <div className="flex flex-wrap justify-center gap-4">
+                {Object.entries(roles).map(([key, role]) => (
+                  <div key={key} 
+                       className="role-preview-card"
+                       style={{ 
+                         backgroundColor: theme.elevation1,
+                         border: `1px solid ${theme.outlineVariant}`,
+                         padding: '12px 24px',
+                         borderRadius: '9999px',
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: '8px',
+                         transition: 'all 0.3s ease',
+                         cursor: 'pointer'
+                       }}
+                       onMouseEnter={(e) => {
+                         e.currentTarget.style.transform = 'scale(1.05)';
+                         e.currentTarget.style.backgroundColor = theme.elevation2;
+                       }}
+                       onMouseLeave={(e) => {
+                         e.currentTarget.style.transform = 'scale(1)';
+                         e.currentTarget.style.backgroundColor = theme.elevation1;
+                       }}>
+                    {React.cloneElement(role.icon, { size: 24, style: { color: theme.primary } })}
+                    <span style={{ color: theme.onSurface }}>{role.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-500`}>
-      <div className="relative overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
-        </div>
+      <style jsx>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * {
+          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .blob {
+          position: absolute;
+          border-radius: 50%;
+          opacity: 0.1;
+          filter: blur(80px);
+        }
+        
+        .blob-1 {
+          width: 400px;
+          height: 400px;
+          top: -200px;
+          right: -200px;
+          animation: float 20s ease-in-out infinite;
+        }
+        
+        .blob-2 {
+          width: 350px;
+          height: 350px;
+          bottom: -175px;
+          left: -175px;
+          animation: float 25s ease-in-out infinite reverse;
+        }
+        
+        .blob-3 {
+          width: 300px;
+          height: 300px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          animation: pulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        @keyframes pulse {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
+          50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.15; }
+        }
+        
+        .arrow-icon {
+          transition: transform 0.3s ease;
+        }
+        
+        .primary-button:hover .arrow-icon {
+          transform: translateX(4px);
+        }
+        
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 24px;
+          margin-top: 80px;
+        }
+        
+        .feature-card {
+          padding: 24px;
+          border-radius: 24px;
+          transition: all 0.3s ease;
+          cursor: default;
+        }
+        
+        .feature-card:hover {
+          transform: scale(1.05);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16px;
+        }
+        
+        .feature-card h3 {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        
+        .feature-card p {
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        
+        /* Common styles */
+        .min-h-screen { min-height: 100vh; }
+        .max-w-4xl { max-width: 56rem; }
+        .max-w-7xl { max-width: 80rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .z-10 { z-index: 10; }
+        .overflow-hidden { overflow: hidden; }
+        .text-center { text-align: center; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-6xl { font-size: 3.75rem; line-height: 1; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-20 { margin-top: 5rem; }
+        .gap-4 { gap: 1rem; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .rounded-full { border-radius: 9999px; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+      `}</style>
+    </div>
+  );
 
-        <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className={`text-5xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+  // About Page Component
+  const AboutPage = () => (
+    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+      <div className="relative">
+        {/* Navigation */}
+        <nav className="px-6 py-4">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <button
+              onClick={() => setCurrentPage('landing')}
+              className="flex items-center gap-2 text-lg font-semibold"
+              style={{ color: theme.primary }}
+            >
+              <Home size={20} />
               RoleMatch
-            </h1>
-            <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Find Your Perfect Team Role
-            </p>
+            </button>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-3 rounded-full transition-all"
+              style={{ 
+                backgroundColor: theme.elevation1,
+                color: darkMode ? theme.tertiary : theme.primary,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
           </div>
+        </nav>
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Question {currentQuestion + 1} of {questions.length}
-              </span>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-full ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-700'} hover:scale-110 transition-all`}
-              >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            </div>
-            <div className={`h-2 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} overflow-hidden`}>
-              <div
-                className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <h1 className="text-4xl font-bold mb-8" style={{ color: theme.onBackground }}>About RoleMatch</h1>
+          
+          <div className="space-y-8">
+            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Mission</h2>
+              <p className="text-lg leading-relaxed" style={{ color: theme.onSurfaceVariant }}>
+                RoleMatch is designed to revolutionize team formation by matching individuals to their optimal project roles. 
+                We believe that when people work in roles that align with their skills, interests, and working style, 
+                teams become more productive, creative, and successful.
+              </p>
+            </section>
 
-          {/* Question Card */}
-          <div
-            className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 shadow-xl transition-all duration-300 ${
-              isAnimating ? 'scale-95 opacity-50' : 'scale-100 opacity-100'
-            }`}
-          >
-            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {questions[currentQuestion].text}
-            </h2>
+            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>How It Works</h2>
+              <div className="space-y-4">
+                <div className="step-item">
+                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
+                    <span style={{ color: theme.onPrimaryContainer }}>1</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Take the Assessment</h3>
+                    <p style={{ color: theme.onSurfaceVariant }}>Answer 12 carefully crafted questions about your skills, preferences, and experience.</p>
+                  </div>
+                </div>
+                
+                <div className="step-item">
+                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
+                    <span style={{ color: theme.onPrimaryContainer }}>2</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Smart Analysis</h3>
+                    <p style={{ color: theme.onSurfaceVariant }}>Our algorithm analyzes your responses using weighted scoring to find your ideal matches.</p>
+                  </div>
+                </div>
+                
+                <div className="step-item">
+                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
+                    <span style={{ color: theme.onPrimaryContainer }}>3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Get Your Results</h3>
+                    <p style={{ color: theme.onSurfaceVariant }}>Receive your top 3 role recommendations with detailed explanations and match percentages.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-            <div className="space-y-3">
-              {questions[currentQuestion].options.map((option, index) => {
-                const question = questions[currentQuestion];
-                const isSelected = question.type === 'single' 
-                  ? answers[question.id] === index
-                  : (answers[question.id] || []).includes(index);
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      if (question.type === 'single') {
-                        handleAnswer(index);
-                      } else {
-                        handleMultipleAnswer(index);
-                      }
-                    }}
-                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white scale-[1.02]'
-                        : darkMode
-                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {question.type === 'multiple' && (
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected ? 'border-white' : darkMode ? 'border-gray-500' : 'border-gray-400'
-                        }`}>
-                          {isSelected && <CheckCircle2 size={16} />}
-                        </div>
-                      )}
-                      <span className="flex-1">{option.text}</span>
+            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>The Roles</h2>
+              <div className="space-y-4">
+                {Object.entries(roles).map(([key, role]) => (
+                  <div key={key} className="role-item">
+                    <div style={{ color: theme.primary }}>{role.icon}</div>
+                    <div>
+                      <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>{role.name}</h3>
+                      <p style={{ color: theme.onSurfaceVariant }}>{role.description}</p>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-            {/* Navigation */}
-            <div className="flex justify-between items-center mt-8">
+            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Team</h2>
+              <p className="text-lg mb-4" style={{ color: theme.onSurfaceVariant }}>
+                RoleMatch was created by a dedicated team of students passionate about improving team dynamics:
+              </p>
+              <ul className="team-list" style={{ color: theme.onSurfaceVariant }}>
+                <li>• <strong>Yuqing Zheng</strong> - UX Developer, Back-end Lead</li>
+                <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
+                <li>• <strong>Brady Wu</strong> - Software Tester, Test Lead</li>
+                <li>• <strong>Gagan Veginati</strong> - Software Designer, Front-end Lead</li>
+                <li>• <strong>Paul Mulroney</strong> - Project Manager, Requirements Lead</li>
+              </ul>
+            </section>
+
+            <div className="text-center pt-8">
               <button
-                onClick={prevQuestion}
-                disabled={currentQuestion === 0}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                  currentQuestion === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : darkMode
-                    ? 'bg-gray-700 text-white hover:bg-gray-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                onClick={() => setCurrentPage('quiz')}
+                className="cta-button"
+                style={{ 
+                  backgroundColor: theme.primary,
+                  color: theme.onPrimary,
+                  boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                  padding: '16px 32px',
+                  borderRadius: '9999px',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
               >
-                <ChevronLeft size={20} />
-                Previous
-              </button>
-
-              {questions[currentQuestion].type === 'multiple' && (
-                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Select all that apply
-                </span>
-              )}
-
-              <button
-                onClick={nextQuestion}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-              >
-                {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
-                <ChevronRight size={20} />
+                Start Your Assessment
               </button>
             </div>
           </div>
@@ -751,11 +903,639 @@ const RoleMatch = () => {
       </div>
 
       <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
+        .section-card {
+          padding: 24px;
+          border-radius: 24px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+        
+        .step-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        
+        .step-number {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-weight: 600;
+        }
+        
+        .role-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        
+        .team-list {
+          list-style: none;
+          padding: 0;
+        }
+        
+        .team-list li {
+          margin-bottom: 8px;
+          line-height: 1.6;
+        }
+        
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 40px rgba(0, 100, 149, 0.4) !important;
+        }
+        
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-8 > * + * { margin-top: 2rem; }
+        .font-semibold { font-weight: 600; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .pt-8 { padding-top: 2rem; }
+        .leading-relaxed { line-height: 1.625; }
+      `}</style>
+    </div>
+  );
+
+  // Quiz Page Component
+  const QuizPage = () => {
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+        <div className="relative overflow-hidden">
+          {/* Animated background */}
+          <div className="absolute inset-0 overflow-hidden opacity-30">
+            <div className="quiz-blob-1" style={{ backgroundColor: theme.primary }}></div>
+            <div className="quiz-blob-2" style={{ backgroundColor: theme.secondary }}></div>
+          </div>
+
+          <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
+                RoleMatch Assessment
+              </h1>
+              <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
+                Find Your Perfect Team Role
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium" style={{ color: theme.onSurfaceVariant }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </span>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 rounded-full transition-all"
+                  style={{ 
+                    backgroundColor: theme.elevation1,
+                    color: darkMode ? theme.tertiary : theme.primary
+                  }}
+                >
+                  {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+              </div>
+              <div className="progress-bar" style={{ backgroundColor: theme.surfaceVariant }}>
+                <div
+                  className="progress-fill"
+                  style={{ 
+                    width: `${progress}%`,
+                    background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Question Card */}
+            <div
+              className={`question-card ${isAnimating ? 'animating' : ''}`}
+              style={{ 
+                backgroundColor: theme.surface,
+                boxShadow: darkMode 
+                  ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
+                  : '0 10px 40px rgba(0, 0, 0, 0.08)'
+              }}
+            >
+              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.onSurface }}>
+                {questions[currentQuestion].text}
+              </h2>
+
+              {/* Warning Message */}
+              {showWarning && (
+                <div className="warning-message" style={{ backgroundColor: theme.error + '20' }}>
+                  <Info size={20} style={{ color: theme.error }} />
+                  <span style={{ color: theme.error }}>
+                    {questions[currentQuestion].type === 'multiple' 
+                      ? 'Please select at least one option' 
+                      : 'Please select an option'}
+                  </span>
+                </div>
+              )}
+
+              <div className="options-container">
+                {questions[currentQuestion].options.map((option, index) => {
+                  const question = questions[currentQuestion];
+                  const isSelected = question.type === 'single' 
+                    ? answers[question.id] === index
+                    : (answers[question.id] || []).includes(index);
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        if (question.type === 'single') {
+                          handleAnswer(index);
+                        } else {
+                          handleMultipleAnswer(index);
+                        }
+                      }}
+                      className={`option-button ${isSelected ? 'selected' : ''}`}
+                      style={{ 
+                        backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
+                        color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
+                        borderColor: isSelected ? theme.primary : 'transparent',
+                        boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
+                      }}
+                    >
+                      <div className="option-content">
+                        {question.type === 'multiple' && (
+                          <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
+                               style={{ 
+                                 backgroundColor: isSelected ? theme.primary : 'transparent',
+                                 borderColor: isSelected ? theme.primary : theme.outline
+                               }}>
+                            {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
+                          </div>
+                        )}
+                        <span className="option-text">{option.text}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Navigation */}
+              <div className="navigation">
+                <button
+                  onClick={prevQuestion}
+                  disabled={currentQuestion === 0}
+                  className={`nav-btn prev-btn ${currentQuestion === 0 ? 'disabled' : ''}`}
+                  style={{ 
+                    backgroundColor: currentQuestion === 0 ? theme.surfaceVariant : theme.elevation2,
+                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                  Previous
+                </button>
+
+                {questions[currentQuestion].type === 'multiple' && (
+                  <span className="select-hint" style={{ color: theme.onSurfaceVariant }}>
+                    Select all that apply
+                  </span>
+                )}
+
+                <button
+                  onClick={nextQuestion}
+                  className="nav-btn next-btn"
+                  style={{ 
+                    backgroundColor: theme.primary,
+                    color: theme.onPrimary,
+                    boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                  }}
+                >
+                  {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style jsx>{`
+          .quiz-blob-1 {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 25%;
+            left: -200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 20s ease-in-out infinite;
+          }
+          
+          .quiz-blob-2 {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            bottom: 25%;
+            right: -200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: float 25s ease-in-out infinite reverse;
+          }
+          
+          .progress-bar {
+            height: 8px;
+            border-radius: 9999px;
+            overflow: hidden;
+          }
+          
+          .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease-out;
+          }
+          
+          .question-card {
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.3s ease;
+          }
+          
+          .question-card.animating {
+            transform: scale(0.95);
+            opacity: 0.5;
+          }
+          
+          .warning-message {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            animation: shake 0.5s ease-in-out;
+          }
+          
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+            20%, 40%, 60%, 80% { transform: translateX(2px); }
+          }
+          
+          .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+          }
+          
+          .option-button {
+            width: 100%;
+            text-align: left;
+            padding: 16px 20px;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+          }
+          
+          .option-button:hover {
+            transform: scale(1.01);
+          }
+          
+          .option-button.selected {
+            transform: scale(1.02);
+          }
+          
+          .option-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+          
+          .checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+          }
+          
+          .option-text {
+            flex: 1;
+            font-weight: 500;
+            font-size: 16px;
+          }
+          
+          .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+          }
+          
+          .nav-btn {
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+          }
+          
+          .nav-btn:hover:not(.disabled) {
+            transform: scale(1.05);
+          }
+          
+          .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+          
+          .select-hint {
+            font-size: 14px;
+            font-weight: 500;
+          }
+          
+          /* Common styles */
+          .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
+          .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+          .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+          .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+          .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+          .font-bold { font-weight: 700; }
+          .font-medium { font-weight: 500; }
+          .mb-2 { margin-bottom: 0.5rem; }
+          .mb-6 { margin-bottom: 1.5rem; }
+          .mb-8 { margin-bottom: 2rem; }
+          .px-4 { padding-left: 1rem; padding-right: 1rem; }
+          .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+          .p-2 { padding: 0.5rem; }
+        `}</style>
+      </div>
+    );
+  };
+
+  // Results Page Component
+  const ResultsPage = () => (
+    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+      <div className="relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          {results.recommendations.map((rec, index) => (
+            <div key={rec.role}
+                 className="result-blob"
+                 style={{ 
+                   background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
+                   top: `${index * 30}%`,
+                   left: index % 2 === 0 ? '-10%' : '60%',
+                   animationDelay: `${index * 0.5}s`
+                 }}></div>
+          ))}
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="results-header">
+            <h1 className="text-4xl font-bold" style={{ color: theme.onBackground }}>
+              Your Results
+            </h1>
+            <div className="header-actions">
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="theme-btn"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: darkMode ? theme.tertiary : theme.primary
+                }}
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                onClick={restart}
+                className="retake-btn"
+                style={{ 
+                  backgroundColor: theme.primary,
+                  color: theme.onPrimary,
+                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                }}
+              >
+                <RefreshCw size={20} />
+                Retake Quiz
+              </button>
+            </div>
+          </div>
+
+          {/* Results Cards */}
+          <div className="results-grid">
+            {results.recommendations.map((rec, index) => (
+              <div
+                key={rec.role}
+                className="result-card"
+                style={{
+                  backgroundColor: theme.surface,
+                  boxShadow: darkMode 
+                    ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
+                    : '0 10px 40px rgba(0, 0, 0, 0.08)',
+                  animationDelay: `${index * 0.1}s`
+                }}
+              >
+                <div className="card-content">
+                  <div className="card-main">
+                    <div className="card-header">
+                      <div className="icon-container"
+                           style={{ 
+                             background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
+                             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
+                           }}>
+                        {React.cloneElement(rec.roleInfo.icon, { size: 32, style: { color: '#ffffff' } })}
+                      </div>
+                      <div>
+                        <h3 className="role-name" style={{ color: theme.onSurface }}>
+                          {rec.roleInfo.name}
+                        </h3>
+                        <p className="match-percentage" style={{ color: theme.primary }}>
+                          {rec.score}% Match
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <p className="explanation" style={{ color: theme.onSurfaceVariant }}>
+                      {rec.explanation}
+                    </p>
+                    
+                    <p className="description" style={{ color: theme.onSurfaceVariant }}>
+                      {rec.roleInfo.description}
+                    </p>
+                    
+                    <div className="skills-container">
+                      {rec.roleInfo.skills.map(skill => (
+                        <span
+                          key={skill}
+                          className="skill-tag"
+                          style={{
+                            backgroundColor: theme.secondaryContainer,
+                            color: theme.onSecondaryContainer
+                          }}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="score-visual">
+                    <svg className="score-circle" viewBox="0 0 96 96">
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="36"
+                        stroke={theme.surfaceVariant}
+                        strokeWidth="8"
+                        fill="none"
+                      />
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="36"
+                        stroke={`url(#gradient-${rec.role})`}
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 36}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - rec.score / 100)}`}
+                        className="score-progress"
+                      />
+                      <defs>
+                        <linearGradient id={`gradient-${rec.role}`}>
+                          <stop offset="0%" stopColor={rec.roleInfo.gradient.from} />
+                          <stop offset="100%" stopColor={rec.roleInfo.gradient.to} />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="score-text">
+                      <span style={{ color: theme.onSurface }}>{rec.score}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Export Options */}
+          <div className="export-card" style={{ 
+            backgroundColor: theme.surface,
+            boxShadow: darkMode 
+              ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
+              : '0 10px 40px rgba(0, 0, 0, 0.08)'
+          }}>
+            <h3 className="export-title" style={{ color: theme.onSurface }}>
+              Export Your Results
+            </h3>
+            <div className="export-buttons">
+              <button
+                onClick={exportToCSV}
+                className="export-btn"
+                style={{ 
+                  backgroundColor: theme.secondaryContainer,
+                  color: theme.onSecondaryContainer
+                }}
+              >
+                <Download size={20} />
+                Download CSV
+              </button>
+              <button
+                onClick={exportToPDF}
+                className="export-btn"
+                style={{ 
+                  backgroundColor: theme.tertiaryContainer,
+                  color: theme.onTertiaryContainer
+                }}
+              >
+                <Download size={20} />
+                Download PDF
+              </button>
+              <button
+                onClick={shareResults}
+                className="export-btn"
+                style={{ 
+                  backgroundColor: theme.primaryContainer,
+                  color: theme.onPrimaryContainer
+                }}
+              >
+                <Share2 size={20} />
+                Share Results
+              </button>
+            </div>
+          </div>
+
+          {/* Share Notification */}
+          {shareNotification && (
+            <div className="share-notification" style={{ 
+              backgroundColor: theme.primary,
+              color: theme.onPrimary
+            }}>
+              {shareNotification}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .result-blob {
+          position: absolute;
+          width: 400px;
+          height: 400px;
+          border-radius: 50%;
+          filter: blur(100px);
+          animation: float 20s ease-in-out infinite;
+        }
+        
+        .results-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 32px;
+        }
+        
+        .header-actions {
+          display: flex;
+          gap: 16px;
+        }
+        
+        .theme-btn, .retake-btn {
+          padding: 12px;
+          border-radius: 9999px;
+          transition: all 0.3s ease;
+          border: none;
+          cursor: pointer;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .retake-btn {
+          padding: 12px 24px;
+        }
+        
+        .theme-btn:hover, .retake-btn:hover {
+          transform: scale(1.1);
+        }
+        
+        .results-grid {
+          display: grid;
+          gap: 24px;
+          margin-bottom: 32px;
+        }
+        
+        .result-card {
+          border-radius: 24px;
+          padding: 24px;
+          animation: slideInUp 0.5s ease-out both;
         }
         
         @keyframes slideInUp {
@@ -769,20 +1549,178 @@ const RoleMatch = () => {
           }
         }
         
-        .animate-blob {
-          animation: blob 7s infinite;
+        .card-content {
+          display: flex;
+          justify-content: space-between;
+          gap: 24px;
         }
         
-        .animation-delay-2000 {
-          animation-delay: 2s;
+        .card-main {
+          flex: 1;
         }
         
-        .animation-delay-4000 {
-          animation-delay: 4s;
+        .card-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 16px;
         }
+        
+        .icon-container {
+          width: 64px;
+          height: 64px;
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        
+        .role-name {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        
+        .match-percentage {
+          font-weight: 600;
+          font-size: 16px;
+        }
+        
+        .explanation {
+          margin-bottom: 16px;
+          font-size: 18px;
+          line-height: 1.6;
+        }
+        
+        .description {
+          margin-bottom: 16px;
+          font-style: italic;
+          line-height: 1.5;
+        }
+        
+        .skills-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .skill-tag {
+          padding: 6px 16px;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        
+        .score-visual {
+          position: relative;
+          width: 96px;
+          height: 96px;
+          flex-shrink: 0;
+        }
+        
+        .score-circle {
+          width: 96px;
+          height: 96px;
+          transform: rotate(-90deg);
+        }
+        
+        .score-progress {
+          transition: stroke-dashoffset 1s ease-out;
+        }
+        
+        .score-text {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          font-weight: 700;
+        }
+        
+        .export-card {
+          border-radius: 24px;
+          padding: 24px;
+          animation: slideInUp 0.5s ease-out 0.3s both;
+        }
+        
+        .export-title {
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 16px;
+        }
+        
+        .export-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+        
+        .export-btn {
+          padding: 12px 24px;
+          border-radius: 9999px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border: none;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        
+        .export-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .share-notification {
+          position: fixed;
+          bottom: 32px;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 16px 24px;
+          border-radius: 12px;
+          font-weight: 600;
+          animation: slideUpIn 0.3s ease-out;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes slideUpIn {
+          from {
+            transform: translateX(-50%) translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        /* Common styles */
+        .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .font-bold { font-weight: 700; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
       `}</style>
     </div>
   );
+
+  // Main render logic
+  if (currentPage === 'landing') {
+    return <LandingPage />;
+  } else if (currentPage === 'about') {
+    return <AboutPage />;
+  } else if (currentPage === 'quiz') {
+    return <QuizPage />;
+  } else if (currentPage === 'results' && results) {
+    return <ResultsPage />;
+  }
+
+  // Default to landing page
+  return <LandingPage />;
 };
 
 export default RoleMatch;
