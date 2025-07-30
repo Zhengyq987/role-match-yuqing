@@ -811,7 +811,7 @@ const RoleMatch = () => {
   const ThemeToggle = () => (
     <button
       onClick={() => setDarkMode(!darkMode)}
-      className="theme-toggle"
+      className="theme-toggle-fixed"
       style={{ 
         position: 'fixed',
         top: '20px',
@@ -824,7 +824,12 @@ const RoleMatch = () => {
         transition: 'all 0.3s ease',
         cursor: 'pointer',
         border: 'none',
-        zIndex: 1000
+        zIndex: 1000,
+        width: '48px',
+        height: '48px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
       {darkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -1241,7 +1246,10 @@ const RoleMatch = () => {
               <input
                 type="text"
                 value={studentInfo.firstName}
-                onChange={(e) => setStudentInfo({ ...studentInfo, firstName: e.target.value })}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setStudentInfo(prev => ({ ...prev, firstName: newValue }));
+                }}
                 className="form-input"
                 style={{ 
                   backgroundColor: theme.elevation1,
@@ -1249,6 +1257,7 @@ const RoleMatch = () => {
                   borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your first name"
+                autoComplete="given-name"
               />
               {studentInfoErrors.firstName && (
                 <p className="error-message" style={{ color: theme.error }}>
@@ -1265,7 +1274,10 @@ const RoleMatch = () => {
               <input
                 type="text"
                 value={studentInfo.lastName}
-                onChange={(e) => setStudentInfo({ ...studentInfo, lastName: e.target.value })}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setStudentInfo(prev => ({ ...prev, lastName: newValue }));
+                }}
                 className="form-input"
                 style={{ 
                   backgroundColor: theme.elevation1,
@@ -1273,6 +1285,7 @@ const RoleMatch = () => {
                   borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your last name"
+                autoComplete="family-name"
               />
               {studentInfoErrors.lastName && (
                 <p className="error-message" style={{ color: theme.error }}>
@@ -1293,7 +1306,7 @@ const RoleMatch = () => {
                   const value = e.target.value.toUpperCase();
                   // Allow only U followed by up to 8 digits
                   if (value === '' || /^U\d{0,8}$/.test(value)) {
-                    setStudentInfo({ ...studentInfo, buId: value });
+                    setStudentInfo(prev => ({ ...prev, buId: value }));
                   }
                 }}
                 className="form-input"
@@ -1304,6 +1317,7 @@ const RoleMatch = () => {
                 }}
                 placeholder="U12345678"
                 maxLength={9}
+                autoComplete="off"
               />
               {studentInfoErrors.buId && (
                 <p className="error-message" style={{ color: theme.error }}>
@@ -1320,7 +1334,10 @@ const RoleMatch = () => {
               <input
                 type="email"
                 value={studentInfo.email}
-                onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setStudentInfo(prev => ({ ...prev, email: newValue }));
+                }}
                 className="form-input"
                 style={{ 
                   backgroundColor: theme.elevation1,
@@ -1328,6 +1345,7 @@ const RoleMatch = () => {
                   borderColor: studentInfoErrors.email ? theme.error : theme.outline
                 }}
                 placeholder="yourname@bu.edu"
+                autoComplete="email"
               />
               {studentInfoErrors.email && (
                 <p className="error-message" style={{ color: theme.error }}>
