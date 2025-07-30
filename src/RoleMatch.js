@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
-  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'quiz', 'results'
+  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'studentInfo', 'quiz', 'results', 'professor'
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
@@ -10,6 +10,17 @@ const RoleMatch = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [shareNotification, setShareNotification] = useState('');
+  const [hoveredRole, setHoveredRole] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
+  
+  // Student information state
+  const [studentInfo, setStudentInfo] = useState({
+    firstName: '',
+    lastName: '',
+    buId: '',
+    email: ''
+  });
+  const [studentInfoErrors, setStudentInfoErrors] = useState({});
 
   // Material 3 Color Scheme
   const colors = {
@@ -69,42 +80,52 @@ const RoleMatch = () => {
 
   const theme = darkMode ? colors.dark : colors.light;
 
-  // Role definitions with updated icons
+  // Role definitions with Lottie animations
   const roles = {
     RE: {
       name: "Requirements Engineer",
       description: "Gathers and documents project requirements, writes specifications",
       skills: ["Documentation", "Analysis", "Communication", "Research"],
       icon: <Sparkles size={32} />,
-      gradient: { from: theme.primary, to: theme.secondary }
+      gradient: { from: theme.primary, to: theme.secondary },
+      lottieUrl: "https://lottie.host/d3f7d4d6-4f7e-4b8f-8f4f-6f8f8f8f8f8f/requirements-engineer.json",
+      color: "#3B82F6"
     },
     CM: {
       name: "Configuration Manager",
       description: "Manages tools, files, versions, and project structure",
       skills: ["Organization", "Version Control", "Tool Management", "Documentation"],
       icon: <Settings size={32} />,
-      gradient: { from: theme.secondary, to: theme.tertiary }
+      gradient: { from: theme.secondary, to: theme.tertiary },
+      lottieUrl: "https://lottie.host/e4f5d5d7-5f8e-5c9f-9f5f-7f9f9f9f9f9f/config-manager.json",
+      color: "#10B981"
     },
     Design: {
       name: "System Designer",
       description: "Plans system architecture and component interactions",
       skills: ["Architecture", "Diagramming", "System Planning", "Technical Design"],
       icon: <Code size={32} />,
-      gradient: { from: theme.tertiary, to: theme.primary }
+      gradient: { from: theme.tertiary, to: theme.primary },
+      lottieUrl: "https://lottie.host/f5f6d6d8-6f9f-6d0f-0f6f-8f0f0f0f0f0f/system-designer.json",
+      color: "#8B5CF6"
     },
     UX: {
       name: "UX Designer",
       description: "Designs user interfaces and improves user experience",
       skills: ["UI Design", "Prototyping", "User Research", "Visual Design"],
       icon: <Palette size={32} />,
-      gradient: { from: theme.primary, to: theme.tertiary }
+      gradient: { from: theme.primary, to: theme.tertiary },
+      lottieUrl: "https://lottie.host/a6f7d7d9-7f0f-7e1f-1f7f-9f1f1f1f1f1f/ux-designer.json",
+      color: "#EC4899"
     },
     Test: {
       name: "QA Tester",
       description: "Ensures quality through testing and bug detection",
       skills: ["Testing", "Debugging", "Quality Assurance", "Attention to Detail"],
       icon: <TestTube size={32} />,
-      gradient: { from: theme.secondary, to: theme.primary }
+      gradient: { from: theme.secondary, to: theme.primary },
+      lottieUrl: "https://lottie.host/b7f8d8e0-8f1f-8f2f-2f8f-0f2f2f2f2f2f/qa-tester.json",
+      color: "#F59E0B"
     }
   };
 
@@ -116,11 +137,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 3.0,
       options: [
-        { text: "Writing clear instructions or outlining requirements", points: { RE: 3 } },
-        { text: "Organizing tools, files, and project structure", points: { CM: 3 } },
-        { text: "Planning how system parts connect and work together", points: { Design: 3 } },
-        { text: "Designing user interfaces and improving usability", points: { UX: 3 } },
-        { text: "Testing and making sure things work correctly", points: { Test: 3 } }
+        { text: "Writing clear instructions or outlining requirements", points: { RE: 3 }, roleKey: 'RE' },
+        { text: "Organizing tools, files, and project structure", points: { CM: 3 }, roleKey: 'CM' },
+        { text: "Planning how system parts connect and work together", points: { Design: 3 }, roleKey: 'Design' },
+        { text: "Designing user interfaces and improving usability", points: { UX: 3 }, roleKey: 'UX' },
+        { text: "Testing and making sure things work correctly", points: { Test: 3 }, roleKey: 'Test' }
       ]
     },
     {
@@ -129,11 +150,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.5,
       options: [
-        { text: "Requirement writer or researcher", points: { RE: 3 } },
-        { text: "Repository/file manager", points: { CM: 3 } },
-        { text: "Systems planner or diagram designer", points: { Design: 3 } },
-        { text: "Interface or layout designer", points: { UX: 3 } },
-        { text: "Tester or debugger", points: { Test: 3 } }
+        { text: "Requirement writer or researcher", points: { RE: 3 }, roleKey: 'RE' },
+        { text: "Repository/file manager", points: { CM: 3 }, roleKey: 'CM' },
+        { text: "Systems planner or diagram designer", points: { Design: 3 }, roleKey: 'Design' },
+        { text: "Interface or layout designer", points: { UX: 3 }, roleKey: 'UX' },
+        { text: "Tester or debugger", points: { Test: 3 }, roleKey: 'Test' }
       ]
     },
     {
@@ -142,10 +163,10 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.0,
       options: [
-        { text: "I like working alone and being detail-focused", points: { Test: 2, CM: 1 } },
-        { text: "I enjoy collaborative work and sharing ideas", points: { RE: 2, UX: 1 } },
-        { text: "I prefer strategic planning and system thinking", points: { Design: 2, RE: 1 } },
-        { text: "I like creative work and visual problem-solving", points: { UX: 2, Design: 1 } }
+        { text: "I like working alone and being detail-focused", points: { Test: 2, CM: 1 }, roleKey: 'Test' },
+        { text: "I enjoy collaborative work and sharing ideas", points: { RE: 2, UX: 1 }, roleKey: 'RE' },
+        { text: "I prefer strategic planning and system thinking", points: { Design: 2, RE: 1 }, roleKey: 'Design' },
+        { text: "I like creative work and visual problem-solving", points: { UX: 2, Design: 1 }, roleKey: 'UX' }
       ]
     },
     {
@@ -154,76 +175,76 @@ const RoleMatch = () => {
       type: "single",
       weight: 1.5,
       options: [
-        { text: "Writing requirements or specifications", points: { RE: 2 } },
-        { text: "Managing shared tools and files", points: { CM: 2 } },
-        { text: "Designing system architecture", points: { Design: 2 } },
-        { text: "UI/UX design and accessibility", points: { UX: 2 } },
-        { text: "Testing and quality control", points: { Test: 2 } }
+        { text: "Writing requirements or specifications", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Managing shared tools and files", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Designing system architecture", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "UI/UX design and accessibility", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Testing and quality control", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
       id: 5,
-      text: "Which of these describe your interests? (Select all that apply)",
+      text: "Which of these describe your interests?",
       type: "multiple",
       weight: 1.0,
       options: [
-        { text: "Writing instructions or organizing project ideas", points: { RE: 1 } },
-        { text: "Keeping track of files, folders, and shared materials", points: { CM: 1 } },
-        { text: "Planning how different features work together", points: { Design: 1 } },
-        { text: "Designing how interfaces should look and feel", points: { UX: 1 } },
-        { text: "Finding problems or mistakes in systems", points: { Test: 1 } }
+        { text: "Writing instructions or organizing project ideas", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Keeping track of files, folders, and shared materials", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Planning how different features work together", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Designing how interfaces should look and feel", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Finding problems or mistakes in systems", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 6,
-      text: "What have you done before? (Select all that apply)",
+      text: "What have you done before?",
       type: "multiple",
       weight: 2.5,
       options: [
-        { text: "Wrote documents, outlines, or plans for projects", points: { RE: 1 } },
-        { text: "Helped keep files and folders organized", points: { CM: 1 } },
-        { text: "Drew diagrams to explain how something works", points: { Design: 1 } },
-        { text: "Sketched website or app designs", points: { UX: 1 } },
-        { text: "Found bugs or tested features", points: { Test: 1 } }
+        { text: "Wrote documents, outlines, or plans for projects", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Helped keep files and folders organized", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Drew diagrams to explain how something works", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Sketched website or app designs", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Found bugs or tested features", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 7,
-      text: "What do you enjoy doing? (Select all that apply)",
+      text: "What do you enjoy doing?",
       type: "multiple",
       weight: 1.5,
       options: [
-        { text: "Writing documents that explain things clearly", points: { RE: 1 } },
-        { text: "Keeping files and content neat and organized", points: { CM: 1 } },
-        { text: "Planning visuals or system structures", points: { Design: 1 } },
-        { text: "Making interfaces simple and easy to use", points: { UX: 1 } },
-        { text: "Catching small details others might miss", points: { Test: 1 } }
+        { text: "Writing documents that explain things clearly", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Keeping files and content neat and organized", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Planning visuals or system structures", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Making interfaces simple and easy to use", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Catching small details others might miss", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 8,
-      text: "Which tools or platforms have you used? (Select all that apply)",
+      text: "Which tools or platforms have you used?",
       type: "multiple",
       weight: 1.0,
       options: [
-        { text: "Written instructions or documentation", points: { RE: 1 } },
-        { text: "Managed files or versions in group settings", points: { CM: 1 } },
-        { text: "Created flowcharts or system diagrams", points: { Design: 1 } },
-        { text: "Designed visual layouts or presentations", points: { UX: 1 } },
-        { text: "Logged issues or verified test results", points: { Test: 1 } }
+        { text: "Written instructions or documentation", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Managed files or versions in group settings", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Created flowcharts or system diagrams", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Designed visual layouts or presentations", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Logged issues or verified test results", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 9,
-      text: "Which behaviors describe you? (Select all that apply)",
+      text: "Which behaviors describe you?",
       type: "multiple",
       weight: 2.0,
       options: [
-        { text: "I help teammates understand requirements", points: { RE: 2 } },
-        { text: "I enjoy organizing to-do lists and folders", points: { CM: 2 } },
-        { text: "I notice when designs or interfaces feel off", points: { UX: 2, Design: 1 } },
-        { text: "I think through edge cases and scenarios", points: { Test: 2, Design: 1 } },
-        { text: "I often write instructions for others", points: { RE: 2, CM: 1 } }
+        { text: "I help teammates understand requirements", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "I enjoy organizing to-do lists and folders", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "I notice when designs or interfaces feel off", points: { UX: 2, Design: 1 }, roleKey: 'UX' },
+        { text: "I think through edge cases and scenarios", points: { Test: 2, Design: 1 }, roleKey: 'Test' },
+        { text: "I often write instructions for others", points: { RE: 2, CM: 1 }, roleKey: 'RE' }
       ]
     },
     {
@@ -232,11 +253,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 1.5,
       options: [
-        { text: "Help define the goals and scope", points: { RE: 2 } },
-        { text: "Set up project structure and tools", points: { CM: 2 } },
-        { text: "Start planning the system architecture", points: { Design: 2 } },
-        { text: "Think about the user experience", points: { UX: 2 } },
-        { text: "Consider testing strategies", points: { Test: 2 } }
+        { text: "Help define the goals and scope", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Set up project structure and tools", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Start planning the system architecture", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Think about the user experience", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Consider testing strategies", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
@@ -245,11 +266,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.0,
       options: [
-        { text: "Writing up steps or requirements", points: { RE: 2 } },
-        { text: "Organizing files and documentation", points: { CM: 2 } },
-        { text: "Creating system diagrams", points: { Design: 2 } },
-        { text: "Making visual layouts or mockups", points: { UX: 2 } },
-        { text: "Finding issues and ensuring quality", points: { Test: 2 } }
+        { text: "Writing up steps or requirements", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Organizing files and documentation", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Creating system diagrams", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Making visual layouts or mockups", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Finding issues and ensuring quality", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
@@ -258,14 +279,90 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.5,
       options: [
-        { text: "Requirements gathering and documentation", points: { RE: 2 } },
-        { text: "Managing project setup and structure", points: { CM: 2 } },
-        { text: "Building logical flows and diagrams", points: { Design: 2 } },
-        { text: "Creating user interfaces", points: { UX: 2 } },
-        { text: "Spotting bugs and issues", points: { Test: 2 } }
+        { text: "Requirements gathering and documentation", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Managing project setup and structure", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Building logical flows and diagrams", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Creating user interfaces", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Spotting bugs and issues", points: { Test: 2 }, roleKey: 'Test' }
       ]
     }
   ];
+
+  // Role Character Component
+  const RoleCharacter = ({ roleKey, isAnimated = false, size = 'medium' }) => {
+    const sizeClasses = {
+      small: 'w-12 h-12',
+      medium: 'w-24 h-24',
+      large: 'w-32 h-32'
+    };
+
+    const animationClasses = isAnimated ? 'animate-bounce' : '';
+    
+    // Using placeholder divs styled as characters for now
+    // In production, these would be replaced with Lottie animations
+    const characterStyles = {
+      RE: { background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' },
+      CM: { background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' },
+      Design: { background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)' },
+      UX: { background: 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)' },
+      Test: { background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' }
+    };
+
+    return (
+      <div className={`role-character ${sizeClasses[size]} ${animationClasses}`}>
+        <div 
+          className="character-circle"
+          style={characterStyles[roleKey]}
+        >
+          {React.cloneElement(roles[roleKey].icon, { 
+            size: size === 'small' ? 20 : size === 'medium' ? 32 : 40,
+            style: { color: '#ffffff' }
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Validate student information
+  const validateStudentInfo = () => {
+    const errors = {};
+    
+    if (!studentInfo.firstName.trim()) {
+      errors.firstName = 'First name is required';
+    }
+    
+    if (!studentInfo.lastName.trim()) {
+      errors.lastName = 'Last name is required';
+    }
+    
+    // BU ID validation - must start with U and be followed by 8 digits
+    const buIdRegex = /^U\d{8}$/;
+    if (!studentInfo.buId.trim()) {
+      errors.buId = 'BU ID is required';
+    } else if (!buIdRegex.test(studentInfo.buId)) {
+      errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!studentInfo.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(studentInfo.email)) {
+      errors.email = 'Please enter a valid email address';
+    } else if (!studentInfo.email.toLowerCase().includes('bu.edu')) {
+      errors.email = 'Please use your BU email address';
+    }
+    
+    setStudentInfoErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle student info submission
+  const handleStudentInfoSubmit = () => {
+    if (validateStudentInfo()) {
+      setCurrentPage('quiz');
+    }
+  };
 
   // Calculate results
   const calculateResults = () => {
@@ -340,26 +437,28 @@ const RoleMatch = () => {
     return explanations[role] || "Based on your responses, this role aligns well with your skills and interests.";
   };
 
-  const handleAnswer = (answer) => {
+  const handleAnswer = (answer, option) => {
     const question = questions[currentQuestion];
     
     if (question.type === 'single') {
       setShowWarning(false);
       setIsAnimating(true);
       setAnswers({ ...answers, [question.id]: answer });
+      setSelectedOption(option.roleKey);
       
       setTimeout(() => {
+        setSelectedOption(null);
         if (currentQuestion < questions.length - 1) {
           setCurrentQuestion(currentQuestion + 1);
         } else {
           submitAnswers();
         }
         setIsAnimating(false);
-      }, 300);
+      }, 800);
     }
   };
 
-  const handleMultipleAnswer = (optionIndex) => {
+  const handleMultipleAnswer = (optionIndex, option) => {
     const question = questions[currentQuestion];
     const currentAnswers = answers[question.id] || [];
     
@@ -373,6 +472,9 @@ const RoleMatch = () => {
         ...answers,
         [question.id]: [...currentAnswers, optionIndex]
       });
+      // Flash animation for selected option
+      setSelectedOption(option.roleKey);
+      setTimeout(() => setSelectedOption(null), 500);
     }
     setShowWarning(false);
   };
@@ -427,22 +529,29 @@ const RoleMatch = () => {
     setAnswers({});
     setResults(null);
     setShowWarning(false);
-    setCurrentPage('quiz');
+    setStudentInfo({
+      firstName: '',
+      lastName: '',
+      buId: '',
+      email: ''
+    });
+    setStudentInfoErrors({});
+    setCurrentPage('studentInfo');
   };
 
   const exportToCSV = () => {
     if (!results) return;
     
-    let csv = "Rank,Role,Score,Description\n";
+    let csv = "Student Name,BU ID,Email,Rank,Role,Score,Description\n";
     results.recommendations.forEach(rec => {
-      csv += `${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
+      csv += `"${studentInfo.firstName} ${studentInfo.lastName}","${studentInfo.buId}","${studentInfo.email}",${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'rolematch-results.csv';
+    a.download = `rolematch-results-${studentInfo.buId}.csv`;
     a.click();
   };
 
@@ -456,7 +565,7 @@ const RoleMatch = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>RoleMatch Results - ${new Date().toLocaleDateString()}</title>
+          <title>RoleMatch Results - ${studentInfo.firstName} ${studentInfo.lastName}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
             
@@ -486,6 +595,24 @@ const RoleMatch = () => {
               color: #6b7280;
               font-size: 16px;
               margin: 0;
+            }
+            
+            .student-info {
+              background: #f3f4f6;
+              border-radius: 12px;
+              padding: 20px;
+              margin-bottom: 30px;
+            }
+            
+            .student-info h2 {
+              color: #1a1c1e;
+              font-size: 20px;
+              margin: 0 0 12px 0;
+            }
+            
+            .student-info p {
+              margin: 4px 0;
+              color: #4b5563;
             }
             
             .result-card {
@@ -596,6 +723,13 @@ const RoleMatch = () => {
             })}</p>
           </div>
           
+          <div class="student-info">
+            <h2>Student Information</h2>
+            <p><strong>Name:</strong> ${studentInfo.firstName} ${studentInfo.lastName}</p>
+            <p><strong>BU ID:</strong> ${studentInfo.buId}</p>
+            <p><strong>Email:</strong> ${studentInfo.email}</p>
+          </div>
+          
           ${results.recommendations.map(rec => `
             <div class="result-card">
               <div class="result-header">
@@ -637,45 +771,68 @@ const RoleMatch = () => {
     printWindow.document.close();
   };
 
-  const shareResults = () => {
+  const shareResults = async () => {
     if (!results) return;
     
-    const text = `My RoleMatch Results:\n\n${results.recommendations.map(rec => 
-      `${rec.rank}. ${rec.roleInfo.name} (${rec.score}% match)`
-    ).join('\n')}\n\nDiscover your perfect team role at RoleMatch!`;
+    // Prepare data for database
+    const submissionData = {
+      studentId: studentInfo.buId,
+      firstName: studentInfo.firstName,
+      lastName: studentInfo.lastName,
+      email: studentInfo.email,
+      submittedAt: new Date().toISOString(),
+      roles: results.recommendations.map(rec => ({
+        rank: rec.rank,
+        role: rec.role,
+        roleName: rec.roleInfo.name,
+        score: rec.score
+      }))
+    };
     
-    if (navigator.share) {
-      navigator.share({
-        title: 'RoleMatch Results',
-        text: text,
-        url: 'https://rolematch.app'
-      }).then(() => {
-        setShareNotification('Results shared successfully!');
-        setTimeout(() => setShareNotification(''), 3000);
-      }).catch(err => {
-        if (err.name !== 'AbortError') {
-          copyToClipboard(text);
-        }
-      });
-    } else {
-      copyToClipboard(text);
+    try {
+      // For Netlify deployment, you would call a Netlify Function here
+      // Example: await fetch('/.netlify/functions/submit-results', {...})
+      
+      // For demonstration, we'll show a success message
+      console.log('Submission data:', submissionData);
+      
+      setShareNotification('Results submitted successfully! Your professor will be able to view them.');
+      setTimeout(() => setShareNotification(''), 5000);
+      
+    } catch (error) {
+      setShareNotification('Error submitting results. Please try again.');
+      setTimeout(() => setShareNotification(''), 3000);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setShareNotification('Results copied to clipboard!');
-      setTimeout(() => setShareNotification(''), 3000);
-    }).catch(() => {
-      setShareNotification('Unable to share results');
-      setTimeout(() => setShareNotification(''), 3000);
-    });
-  };
+  // Theme Toggle Button Component
+  const ThemeToggle = () => (
+    <button
+      onClick={() => setDarkMode(!darkMode)}
+      className="theme-toggle"
+      style={{ 
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        padding: '12px',
+        borderRadius: '50%',
+        backgroundColor: theme.elevation1,
+        color: darkMode ? theme.tertiary : theme.primary,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        border: 'none',
+        zIndex: 1000
+      }}
+    >
+      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
+  );
 
   // Landing Page Component
   const LandingPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
-      <div className="relative overflow-hidden">
+    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
+      <div className="relative">
         {/* Animated background shapes */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="blob blob-1" style={{ backgroundColor: theme.primary }}></div>
@@ -698,23 +855,63 @@ const RoleMatch = () => {
                 >
                   About
                 </button>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="theme-toggle p-3 rounded-full transition-all"
-                  style={{ 
-                    backgroundColor: theme.elevation1,
-                    color: darkMode ? theme.tertiary : theme.primary,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
               </div>
             </div>
           </nav>
 
           {/* Hero Section */}
           <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+            {/* Role Preview moved up */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold mb-8" style={{ color: theme.onSurface }}>
+                Discover Your Role Among
+              </h3>
+              <div className="role-grid-container">
+                <div className="role-grid-top">
+                  {Object.entries(roles).slice(0, 3).map(([key, role]) => (
+                    <div 
+                      key={key} 
+                      className="role-card"
+                      style={{ 
+                        backgroundColor: theme.elevation1,
+                        border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
+                        transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
+                    >
+                      <RoleCharacter roleKey={key} isAnimated={hoveredRole === key} size="medium" />
+                      <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
+                        {role.name}
+                      </h4>
+                    </div>
+                  ))}
+                </div>
+                <div className="role-grid-bottom">
+                  {Object.entries(roles).slice(3, 5).map(([key, role]) => (
+                    <div 
+                      key={key} 
+                      className="role-card"
+                      style={{ 
+                        backgroundColor: theme.elevation1,
+                        border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
+                        transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
+                    >
+                      <RoleCharacter roleKey={key} isAnimated={hoveredRole === key} size="medium" />
+                      <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
+                        {role.name}
+                      </h4>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="mb-8">
               <h2 className="text-6xl font-bold mb-6" style={{ color: theme.onBackground }}>
                 Find Your Perfect<br />
@@ -732,7 +929,7 @@ const RoleMatch = () => {
             </div>
 
             <button
-              onClick={() => setCurrentPage('quiz')}
+              onClick={() => setCurrentPage('studentInfo')}
               className="primary-button group"
               style={{ 
                 backgroundColor: theme.primary,
@@ -746,15 +943,17 @@ const RoleMatch = () => {
                 alignItems: 'center',
                 gap: '12px',
                 transition: 'all 0.3s ease',
-                transform: 'translateY(0)'
+                transform: 'translateY(0)',
+                border: 'none',
+                cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
               }}
             >
               Start Assessment
@@ -762,7 +961,7 @@ const RoleMatch = () => {
             </button>
 
             {/* Features */}
-            <div className="features-grid">
+            <div className="features-grid" style={{ marginBottom: '80px' }}>
               <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
                 <div className="feature-icon" style={{ backgroundColor: theme.primaryContainer }}>
                   <Zap size={24} style={{ color: theme.onPrimaryContainer }} />
@@ -780,7 +979,7 @@ const RoleMatch = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '80px' }}>
               <div className="feature-card" style={{ backgroundColor: theme.elevation1, maxWidth: '320px' }}>
                 <div className="feature-icon" style={{ backgroundColor: theme.tertiaryContainer }}>
                   <Users size={24} style={{ color: theme.onTertiaryContainer }} />
@@ -789,44 +988,11 @@ const RoleMatch = () => {
                 <p style={{ color: theme.onSurfaceVariant }}>Build stronger, more effective project teams</p>
               </div>
             </div>
-
-            {/* Role Preview */}
-            <div className="mt-20">
-              <h3 className="text-2xl font-semibold mb-8" style={{ color: theme.onSurface }}>
-                Discover Your Role Among
-              </h3>
-              <div className="flex flex-wrap justify-center gap-4">
-                {Object.entries(roles).map(([key, role]) => (
-                  <div key={key} 
-                       className="role-preview-card"
-                       style={{ 
-                         backgroundColor: theme.elevation1,
-                         border: `1px solid ${theme.outlineVariant}`,
-                         padding: '12px 24px',
-                         borderRadius: '9999px',
-                         display: 'flex',
-                         alignItems: 'center',
-                         gap: '8px',
-                         transition: 'all 0.3s ease',
-                         cursor: 'pointer'
-                       }}
-                       onMouseEnter={(e) => {
-                         e.currentTarget.style.transform = 'scale(1.05)';
-                         e.currentTarget.style.backgroundColor = theme.elevation2;
-                       }}
-                       onMouseLeave={(e) => {
-                         e.currentTarget.style.transform = 'scale(1)';
-                         e.currentTarget.style.backgroundColor = theme.elevation1;
-                       }}>
-                    {React.cloneElement(role.icon, { size: 24, style: { color: theme.primary } })}
-                    <span style={{ color: theme.onSurface }}>{role.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
+
+      <ThemeToggle />
 
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -878,12 +1044,65 @@ const RoleMatch = () => {
           50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.15; }
         }
         
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+        
         .arrow-icon {
           transition: transform 0.3s ease;
         }
         
         .primary-button:hover .arrow-icon {
           transform: translateX(4px);
+        }
+        
+        .role-grid-container {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        
+        .role-grid-top {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        
+        .role-grid-bottom {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+        }
+        
+        .role-card {
+          padding: 20px;
+          border-radius: 20px;
+          text-align: center;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+          max-width: 200px;
+        }
+        
+        .role-character {
+          position: relative;
+        }
+        
+        .character-circle {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animate-bounce {
+          animation: bounce 1s ease-in-out infinite;
         }
         
         .features-grid {
@@ -899,6 +1118,19 @@ const RoleMatch = () => {
         @media (max-width: 640px) {
           .features-grid {
             grid-template-columns: 1fr;
+          }
+          
+          .role-grid-top {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .role-grid-bottom {
+            flex-direction: column;
+            align-items: center;
+          }
+          
+          .role-card {
+            max-width: 150px;
           }
         }
         
@@ -958,7 +1190,7 @@ const RoleMatch = () => {
         .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
         .mb-6 { margin-bottom: 1.5rem; }
         .mb-8 { margin-bottom: 2rem; }
-        .mt-20 { margin-top: 5rem; }
+        .mb-12 { margin-bottom: 3rem; }
         .gap-4 { gap: 1rem; }
         .flex { display: flex; }
         .items-center { align-items: center; }
@@ -971,9 +1203,256 @@ const RoleMatch = () => {
     </div>
   );
 
+  // Student Info Page Component
+  const StudentInfoPage = () => (
+    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
+      <div className="relative">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden opacity-30">
+          <div className="info-blob-1" style={{ backgroundColor: theme.primary }}></div>
+          <div className="info-blob-2" style={{ backgroundColor: theme.secondary }}></div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 py-8 max-w-2xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
+              Student Information
+            </h1>
+            <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
+              Please enter your details to begin the assessment
+            </p>
+          </div>
+
+          {/* Form Card */}
+          <div className="form-card" style={{ 
+            backgroundColor: theme.surface,
+            boxShadow: darkMode 
+              ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
+              : '0 10px 40px rgba(0, 0, 0, 0.08)'
+          }}>
+            <div className="form-group">
+              <label className="form-label" style={{ color: theme.onSurface }}>
+                <User size={20} />
+                First Name
+              </label>
+              <input
+                type="text"
+                value={studentInfo.firstName}
+                onChange={(e) => setStudentInfo({ ...studentInfo, firstName: e.target.value })}
+                className="form-input"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: theme.onSurface,
+                  borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
+                }}
+                placeholder="Enter your first name"
+              />
+              {studentInfoErrors.firstName && (
+                <p className="error-message" style={{ color: theme.error }}>
+                  {studentInfoErrors.firstName}
+                </p>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ color: theme.onSurface }}>
+                <User size={20} />
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={studentInfo.lastName}
+                onChange={(e) => setStudentInfo({ ...studentInfo, lastName: e.target.value })}
+                className="form-input"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: theme.onSurface,
+                  borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
+                }}
+                placeholder="Enter your last name"
+              />
+              {studentInfoErrors.lastName && (
+                <p className="error-message" style={{ color: theme.error }}>
+                  {studentInfoErrors.lastName}
+                </p>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ color: theme.onSurface }}>
+                <CreditCard size={20} />
+                BU ID
+              </label>
+              <input
+                type="text"
+                value={studentInfo.buId}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase();
+                  // Allow only U followed by up to 8 digits
+                  if (value === '' || /^U\d{0,8}$/.test(value)) {
+                    setStudentInfo({ ...studentInfo, buId: value });
+                  }
+                }}
+                className="form-input"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: theme.onSurface,
+                  borderColor: studentInfoErrors.buId ? theme.error : theme.outline
+                }}
+                placeholder="U12345678"
+                maxLength={9}
+              />
+              {studentInfoErrors.buId && (
+                <p className="error-message" style={{ color: theme.error }}>
+                  {studentInfoErrors.buId}
+                </p>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ color: theme.onSurface }}>
+                <Mail size={20} />
+                BU Email
+              </label>
+              <input
+                type="email"
+                value={studentInfo.email}
+                onChange={(e) => setStudentInfo({ ...studentInfo, email: e.target.value })}
+                className="form-input"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: theme.onSurface,
+                  borderColor: studentInfoErrors.email ? theme.error : theme.outline
+                }}
+                placeholder="yourname@bu.edu"
+              />
+              {studentInfoErrors.email && (
+                <p className="error-message" style={{ color: theme.error }}>
+                  {studentInfoErrors.email}
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={handleStudentInfoSubmit}
+              className="submit-btn"
+              style={{ 
+                backgroundColor: theme.primary,
+                color: theme.onPrimary,
+                boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+              }}
+            >
+              Start Assessment
+              <ArrowRight size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ThemeToggle />
+
+      <style jsx>{`
+        .info-blob-1 {
+          position: absolute;
+          width: 400px;
+          height: 400px;
+          top: 10%;
+          left: -200px;
+          border-radius: 50%;
+          filter: blur(80px);
+          animation: float 20s ease-in-out infinite;
+        }
+        
+        .info-blob-2 {
+          position: absolute;
+          width: 400px;
+          height: 400px;
+          bottom: 10%;
+          right: -200px;
+          border-radius: 50%;
+          filter: blur(80px);
+          animation: float 25s ease-in-out infinite reverse;
+        }
+        
+        .form-card {
+          border-radius: 24px;
+          padding: 40px;
+          transition: all 0.3s ease;
+        }
+        
+        .form-group {
+          margin-bottom: 24px;
+        }
+        
+        .form-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          font-size: 16px;
+        }
+        
+        .form-input {
+          width: 100%;
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 2px solid;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          outline: none;
+        }
+        
+        .form-input:focus {
+          border-color: ${theme.primary} !important;
+          box-shadow: 0 0 0 3px ${theme.primary}20;
+        }
+        
+        .error-message {
+          margin-top: 6px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        
+        .submit-btn {
+          width: 100%;
+          padding: 16px 24px;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 32px;
+        }
+        
+        .submit-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(0, 100, 149, 0.4) !important;
+        }
+        
+        /* Common styles */
+        .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
+        .max-w-2xl { max-width: 42rem; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .font-bold { font-weight: 700; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+      `}</style>
+    </div>
+  );
+
   // About Page Component
   const AboutPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
       <div className="relative">
         {/* Navigation */}
         <nav className="px-6 py-4">
@@ -1006,17 +1485,6 @@ const RoleMatch = () => {
             >
               <Home size={20} />
               RoleMatch
-            </button>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-3 rounded-full transition-all"
-              style={{ 
-                backgroundColor: theme.elevation1,
-                color: darkMode ? theme.tertiary : theme.primary,
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
         </nav>
@@ -1099,6 +1567,8 @@ const RoleMatch = () => {
         </div>
       </div>
 
+      <ThemeToggle />
+
       <style jsx>{`
         .section-card {
           padding: 24px;
@@ -1154,8 +1624,8 @@ const RoleMatch = () => {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
 
     return (
-      <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
-        <div className="relative overflow-hidden">
+      <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
+        <div className="relative">
           {/* Animated background */}
           <div className="absolute inset-0 overflow-hidden opacity-30">
             <div className="quiz-blob-1" style={{ backgroundColor: theme.primary }}></div>
@@ -1163,14 +1633,48 @@ const RoleMatch = () => {
           </div>
 
           <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
-                RoleMatch Assessment
-              </h1>
-              <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
-                Find Your Perfect Team Role
-              </p>
+            {/* Header with Home Button */}
+            <div className="quiz-header">
+              <button
+                onClick={() => setCurrentPage('landing')}
+                className="home-btn"
+                style={{ 
+                  backgroundColor: theme.elevation1,
+                  color: theme.primary,
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.primaryContainer;
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.elevation1;
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <Home size={18} />
+                Home
+              </button>
+              
+              <div className="text-center flex-1">
+                <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
+                  RoleMatch Assessment
+                </h1>
+                <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
+                  {studentInfo.firstName} {studentInfo.lastName} ({studentInfo.buId})
+                </p>
+              </div>
+              
+              <div style={{ width: '100px' }}></div> {/* Spacer for centering */}
             </div>
 
             {/* Progress Bar */}
@@ -1179,16 +1683,6 @@ const RoleMatch = () => {
                 <span className="text-sm font-medium" style={{ color: theme.onSurfaceVariant }}>
                   Question {currentQuestion + 1} of {questions.length}
                 </span>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-2 rounded-full transition-all"
-                  style={{ 
-                    backgroundColor: theme.elevation1,
-                    color: darkMode ? theme.tertiary : theme.primary
-                  }}
-                >
-                  {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-                </button>
               </div>
               <div className="progress-bar" style={{ backgroundColor: theme.surfaceVariant }}>
                 <div
@@ -1235,36 +1729,42 @@ const RoleMatch = () => {
                     : (answers[question.id] || []).includes(index);
 
                   return (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        if (question.type === 'single') {
-                          handleAnswer(index);
-                        } else {
-                          handleMultipleAnswer(index);
-                        }
-                      }}
-                      className={`option-button ${isSelected ? 'selected' : ''}`}
-                      style={{ 
-                        backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
-                        color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
-                        borderColor: isSelected ? theme.primary : 'transparent',
-                        boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
-                      }}
-                    >
-                      <div className="option-content">
-                        {question.type === 'multiple' && (
-                          <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
-                               style={{ 
-                                 backgroundColor: isSelected ? theme.primary : 'transparent',
-                                 borderColor: isSelected ? theme.primary : theme.outline
-                               }}>
-                            {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
-                          </div>
-                        )}
-                        <span className="option-text">{option.text}</span>
-                      </div>
-                    </button>
+                    <div key={index} className="option-wrapper">
+                      <button
+                        onClick={() => {
+                          if (question.type === 'single') {
+                            handleAnswer(index, option);
+                          } else {
+                            handleMultipleAnswer(index, option);
+                          }
+                        }}
+                        className={`option-button ${isSelected ? 'selected' : ''}`}
+                        style={{ 
+                          backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
+                          color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
+                          borderColor: isSelected ? theme.primary : 'transparent',
+                          boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="option-content">
+                          {question.type === 'multiple' && (
+                            <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
+                                 style={{ 
+                                   backgroundColor: isSelected ? theme.primary : 'transparent',
+                                   borderColor: isSelected ? theme.primary : theme.outline
+                                 }}>
+                              {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
+                            </div>
+                          )}
+                          <span className="option-text">{option.text}</span>
+                        </div>
+                      </button>
+                      {selectedOption === option.roleKey && (
+                        <div className="role-popup">
+                          <RoleCharacter roleKey={option.roleKey} isAnimated={true} size="small" />
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1307,7 +1807,16 @@ const RoleMatch = () => {
           </div>
         </div>
 
+        <ThemeToggle />
+
         <style jsx>{`
+          .quiz-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+          }
+          
           .quiz-blob-1 {
             position: absolute;
             width: 400px;
@@ -1345,6 +1854,7 @@ const RoleMatch = () => {
             border-radius: 24px;
             padding: 32px;
             transition: all 0.3s ease;
+            position: relative;
           }
           
           .question-card.animating {
@@ -1374,6 +1884,10 @@ const RoleMatch = () => {
             flex-direction: column;
             gap: 12px;
             margin-bottom: 32px;
+          }
+          
+          .option-wrapper {
+            position: relative;
           }
           
           .option-button {
@@ -1416,6 +1930,25 @@ const RoleMatch = () => {
             flex: 1;
             font-weight: 500;
             font-size: 16px;
+          }
+          
+          .role-popup {
+            position: absolute;
+            right: -80px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: slideInRight 0.3s ease-out;
+          }
+          
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(20px) translateY(-50%);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0) translateY(-50%);
+            }
           }
           
           .navigation {
@@ -1465,7 +1998,7 @@ const RoleMatch = () => {
           .mb-8 { margin-bottom: 2rem; }
           .px-4 { padding-left: 1rem; padding-right: 1rem; }
           .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-          .p-2 { padding: 0.5rem; }
+          .flex-1 { flex: 1; }
         `}</style>
       </div>
     );
@@ -1473,8 +2006,8 @@ const RoleMatch = () => {
 
   // Results Page Component
   const ResultsPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
-      <div className="relative overflow-hidden">
+    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
+      <div className="relative">
         {/* Animated background */}
         <div className="absolute inset-0 overflow-hidden opacity-20">
           {results.recommendations.map((rec, index) => (
@@ -1497,16 +2030,6 @@ const RoleMatch = () => {
             </h1>
             <div className="header-actions">
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="theme-btn"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: darkMode ? theme.tertiary : theme.primary
-                }}
-              >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-              <button
                 onClick={restart}
                 className="retake-btn"
                 style={{ 
@@ -1521,7 +2044,19 @@ const RoleMatch = () => {
             </div>
           </div>
 
-          {/* Results Cards */}
+          {/* Student Info Summary */}
+          <div className="student-summary" style={{ 
+            backgroundColor: theme.elevation1,
+            color: theme.onSurfaceVariant,
+            padding: '12px 24px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            fontSize: '14px'
+          }}>
+            <strong>{studentInfo.firstName} {studentInfo.lastName}</strong> • {studentInfo.buId} • {studentInfo.email}
+          </div>
+
+          {/* Results Cards with Character Animations */}
           <div className="results-grid">
             {results.recommendations.map((rec, index) => (
               <div
@@ -1538,13 +2073,7 @@ const RoleMatch = () => {
                 <div className="card-content">
                   <div className="card-main">
                     <div className="card-header">
-                      <div className="icon-container"
-                           style={{ 
-                             background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
-                             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
-                           }}>
-                        {React.cloneElement(rec.roleInfo.icon, { size: 32, style: { color: '#ffffff' } })}
-                      </div>
+                      <RoleCharacter roleKey={rec.role} isAnimated={false} size="large" />
                       <div>
                         <h3 className="role-name" style={{ color: theme.onSurface }}>
                           {rec.roleInfo.name}
@@ -1624,7 +2153,7 @@ const RoleMatch = () => {
               : '0 10px 40px rgba(0, 0, 0, 0.08)'
           }}>
             <h3 className="export-title" style={{ color: theme.onSurface }}>
-              Export Your Results
+              Save & Share Your Results
             </h3>
             <div className="export-buttons">
               <button
@@ -1658,9 +2187,17 @@ const RoleMatch = () => {
                 }}
               >
                 <Share2 size={20} />
-                Share Results
+                Submit Results
               </button>
             </div>
+            <p className="export-note" style={{ 
+              color: theme.onSurfaceVariant,
+              fontSize: '14px',
+              marginTop: '16px',
+              fontStyle: 'italic'
+            }}>
+              Click "Submit Results" to save your results to the course database. Your professor will be able to view them.
+            </p>
           </div>
 
           {/* Share Notification */}
@@ -1674,6 +2211,8 @@ const RoleMatch = () => {
           )}
         </div>
       </div>
+
+      <ThemeToggle />
 
       <style jsx>{`
         .result-blob {
@@ -1689,7 +2228,7 @@ const RoleMatch = () => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
         
         .header-actions {
@@ -1697,8 +2236,8 @@ const RoleMatch = () => {
           gap: 16px;
         }
         
-        .theme-btn, .retake-btn {
-          padding: 12px;
+        .retake-btn {
+          padding: 12px 24px;
           border-radius: 9999px;
           transition: all 0.3s ease;
           border: none;
@@ -1709,11 +2248,7 @@ const RoleMatch = () => {
           gap: 8px;
         }
         
-        .retake-btn {
-          padding: 12px 24px;
-        }
-        
-        .theme-btn:hover, .retake-btn:hover {
+        .retake-btn:hover {
           transform: scale(1.1);
         }
         
@@ -1755,16 +2290,6 @@ const RoleMatch = () => {
           align-items: center;
           gap: 16px;
           margin-bottom: 16px;
-        }
-        
-        .icon-container {
-          width: 64px;
-          height: 64px;
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
         }
         
         .role-name {
@@ -1904,6 +2429,8 @@ const RoleMatch = () => {
     return <LandingPage />;
   } else if (currentPage === 'about') {
     return <AboutPage />;
+  } else if (currentPage === 'studentInfo') {
+    return <StudentInfoPage />;
   } else if (currentPage === 'quiz') {
     return <QuizPage />;
   } else if (currentPage === 'results' && results) {
