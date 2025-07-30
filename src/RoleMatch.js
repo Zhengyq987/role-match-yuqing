@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
@@ -774,35 +774,37 @@ const RoleMatch = () => {
   const shareResults = async () => {
     if (!results) return;
     
-    // Prepare data for database
-    const submissionData = {
-      studentId: studentInfo.buId,
-      firstName: studentInfo.firstName,
-      lastName: studentInfo.lastName,
-      email: studentInfo.email,
-      submittedAt: new Date().toISOString(),
-      roles: results.recommendations.map(rec => ({
-        rank: rec.rank,
-        role: rec.role,
-        roleName: rec.roleInfo.name,
-        score: rec.score
-      }))
-    };
+    const text = `My RoleMatch Results:\n\n${results.recommendations.map(rec => 
+      `${rec.rank}. ${rec.roleInfo.name} (${rec.score}% match)`
+    ).join('\n')}\n\nDiscover your perfect team role at RoleMatch!`;
     
-    try {
-      // For Netlify deployment, you would call a Netlify Function here
-      // Example: await fetch('/.netlify/functions/submit-results', {...})
-      
-      // For demonstration, we'll show a success message
-      console.log('Submission data:', submissionData);
-      
-      setShareNotification('Results submitted successfully! Your professor will be able to view them.');
-      setTimeout(() => setShareNotification(''), 5000);
-      
-    } catch (error) {
-      setShareNotification('Error submitting results. Please try again.');
-      setTimeout(() => setShareNotification(''), 3000);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'RoleMatch Results',
+          text: text
+        });
+        setShareNotification('Results shared successfully!');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          // Fallback to clipboard
+          copyToClipboard(text);
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      copyToClipboard(text);
     }
+    
+    setTimeout(() => setShareNotification(''), 3000);
+  };
+  
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setShareNotification('Results copied to clipboard!');
+    }).catch(() => {
+      setShareNotification('Unable to share results');
+    });
   };
 
   // Theme Toggle Button Component
@@ -2187,17 +2189,9 @@ const RoleMatch = () => {
                 }}
               >
                 <Share2 size={20} />
-                Submit Results
+                Share Results
               </button>
             </div>
-            <p className="export-note" style={{ 
-              color: theme.onSurfaceVariant,
-              fontSize: '14px',
-              marginTop: '16px',
-              fontStyle: 'italic'
-            }}>
-              Click "Submit Results" to save your results to the course database. Your professor will be able to view them.
-            </p>
           </div>
 
           {/* Share Notification */}
