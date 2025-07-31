@@ -1,25 +1,48 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
   const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'studentInfo', 'quiz', 'results', 'professor'
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  // Detect system dark mode preference
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Listen for system theme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e) => setDarkMode(e.matches);
+      
+      // Modern browsers
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+      } 
+      // Older browsers
+      else if (mediaQuery.addListener) {
+        mediaQuery.addListener(handleChange);
+        return () => mediaQuery.removeListener(handleChange);
+      }
+    }
+  }, []);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [shareNotification, setShareNotification] = useState('');
   const [hoveredRole, setHoveredRole] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   
-  // Student information state
-  const [studentInfo, setStudentInfo] = useState({
-    firstName: '',
-    lastName: '',
-    buId: '',
-    email: ''
-  });
+  // Student information state - using separate states to avoid re-render issues
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [buId, setBuId] = useState('');
+  const [email, setEmail] = useState('');
   const [studentInfoErrors, setStudentInfoErrors] = useState({});
 
   // Material 3 Color Scheme
@@ -327,29 +350,29 @@ const RoleMatch = () => {
   const validateStudentInfo = () => {
     const errors = {};
     
-    if (!studentInfo.firstName.trim()) {
+    if (!firstName.trim()) {
       errors.firstName = 'First name is required';
     }
     
-    if (!studentInfo.lastName.trim()) {
+    if (!lastName.trim()) {
       errors.lastName = 'Last name is required';
     }
     
     // BU ID validation - must start with U and be followed by 8 digits
     const buIdRegex = /^U\d{8}$/;
-    if (!studentInfo.buId.trim()) {
+    if (!buId.trim()) {
       errors.buId = 'BU ID is required';
-    } else if (!buIdRegex.test(studentInfo.buId)) {
+    } else if (!buIdRegex.test(buId)) {
       errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
     }
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!studentInfo.email.trim()) {
+    if (!email.trim()) {
       errors.email = 'Email is required';
-    } else if (!emailRegex.test(studentInfo.email)) {
+    } else if (!emailRegex.test(email)) {
       errors.email = 'Please enter a valid email address';
-    } else if (!studentInfo.email.toLowerCase().includes('bu.edu')) {
+    } else if (!email.toLowerCase().includes('bu.edu')) {
       errors.email = 'Please use your BU email address';
     }
     
@@ -529,12 +552,10 @@ const RoleMatch = () => {
     setAnswers({});
     setResults(null);
     setShowWarning(false);
-    setStudentInfo({
-      firstName: '',
-      lastName: '',
-      buId: '',
-      email: ''
-    });
+    setFirstName('');
+    setLastName('');
+    setBuId('');
+    setEmail('');
     setStudentInfoErrors({});
     setCurrentPage('studentInfo');
   };
@@ -544,14 +565,14 @@ const RoleMatch = () => {
     
     let csv = "Student Name,BU ID,Email,Rank,Role,Score,Description\n";
     results.recommendations.forEach(rec => {
-      csv += `"${studentInfo.firstName} ${studentInfo.lastName}","${studentInfo.buId}","${studentInfo.email}",${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
+      csv += `"${firstName} ${lastName}","${buId}","${email}",${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rolematch-results-${studentInfo.buId}.csv`;
+    a.download = `rolematch-results-${buId}.csv`;
     a.click();
   };
 
@@ -565,7 +586,7 @@ const RoleMatch = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>RoleMatch Results - ${studentInfo.firstName} ${studentInfo.lastName}</title>
+          <title>RoleMatch Results - ${firstName} ${lastName}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
             
@@ -725,9 +746,9 @@ const RoleMatch = () => {
           
           <div class="student-info">
             <h2>Student Information</h2>
-            <p><strong>Name:</strong> ${studentInfo.firstName} ${studentInfo.lastName}</p>
-            <p><strong>BU ID:</strong> ${studentInfo.buId}</p>
-            <p><strong>Email:</strong> ${studentInfo.email}</p>
+            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+            <p><strong>BU ID:</strong> ${buId}</p>
+            <p><strong>Email:</strong> ${email}</p>
           </div>
           
           ${results.recommendations.map(rec => `
@@ -807,35 +828,6 @@ const RoleMatch = () => {
     });
   };
 
-  // Theme Toggle Button Component
-  const ThemeToggle = () => (
-    <button
-      onClick={() => setDarkMode(!darkMode)}
-      className="theme-toggle-fixed"
-      style={{ 
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        padding: '12px',
-        borderRadius: '50%',
-        backgroundColor: theme.elevation1,
-        color: darkMode ? theme.tertiary : theme.primary,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.3s ease',
-        cursor: 'pointer',
-        border: 'none',
-        zIndex: 1000,
-        width: '48px',
-        height: '48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-    </button>
-  );
-
   // Landing Page Component
   const LandingPage = () => (
     <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
@@ -868,8 +860,56 @@ const RoleMatch = () => {
 
           {/* Hero Section */}
           <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-            {/* Role Preview moved up */}
-            <div className="mb-12">
+            <div className="mb-8">
+              <h2 className="text-6xl font-bold mb-6" style={{ color: theme.onBackground }}>
+                Find Your Perfect<br />
+                <span className="gradient-text" style={{ 
+                  background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'inline-block'
+                }}>Team Role</span>
+              </h2>
+              <p className="text-xl mb-8" style={{ color: theme.onSurfaceVariant }}>
+                Discover where you'll thrive in your next software engineering project with our intelligent role matching system
+              </p>
+            </div>
+
+            <button
+              onClick={() => setCurrentPage('studentInfo')}
+              className="primary-button group"
+              style={{ 
+                backgroundColor: theme.primary,
+                color: theme.onPrimary,
+                boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                padding: '16px 32px',
+                borderRadius: '9999px',
+                fontSize: '18px',
+                fontWeight: '600',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'all 0.3s ease',
+                transform: 'translateY(0)',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
+              }}
+            >
+              Start Assessment
+              <ArrowRight size={20} className="arrow-icon" />
+            </button>
+
+            {/* Role Preview - moved here above features */}
+            <div className="mt-20 mb-16">
               <h3 className="text-2xl font-semibold mb-8" style={{ color: theme.onSurface }}>
                 Discover Your Role Among
               </h3>
@@ -919,54 +959,6 @@ const RoleMatch = () => {
               </div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-6xl font-bold mb-6" style={{ color: theme.onBackground }}>
-                Find Your Perfect<br />
-                <span className="gradient-text" style={{ 
-                  background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  display: 'inline-block'
-                }}>Team Role</span>
-              </h2>
-              <p className="text-xl mb-8" style={{ color: theme.onSurfaceVariant }}>
-                Discover where you'll thrive in your next software engineering project with our intelligent role matching system
-              </p>
-            </div>
-
-            <button
-              onClick={() => setCurrentPage('studentInfo')}
-              className="primary-button group"
-              style={{ 
-                backgroundColor: theme.primary,
-                color: theme.onPrimary,
-                boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
-                padding: '16px 32px',
-                borderRadius: '9999px',
-                fontSize: '18px',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.3s ease',
-                transform: 'translateY(0)',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
-              }}
-            >
-              Start Assessment
-              <ArrowRight size={20} className="arrow-icon" />
-            </button>
-
             {/* Features */}
             <div className="features-grid" style={{ marginBottom: '80px' }}>
               <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
@@ -998,8 +990,6 @@ const RoleMatch = () => {
           </div>
         </div>
       </div>
-
-      <ThemeToggle />
 
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -1198,6 +1188,8 @@ const RoleMatch = () => {
         .mb-6 { margin-bottom: 1.5rem; }
         .mb-8 { margin-bottom: 2rem; }
         .mb-12 { margin-bottom: 3rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .mt-20 { margin-top: 5rem; }
         .gap-4 { gap: 1rem; }
         .flex { display: flex; }
         .items-center { align-items: center; }
@@ -1232,123 +1224,188 @@ const RoleMatch = () => {
           </div>
 
           {/* Form Card */}
-          <div className="form-card" style={{ 
+          <div style={{ 
             backgroundColor: theme.surface,
             boxShadow: darkMode 
               ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-              : '0 10px 40px rgba(0, 0, 0, 0.08)'
+              : '0 10px 40px rgba(0, 0, 0, 0.08)',
+            borderRadius: '24px',
+            padding: '40px',
+            transition: 'all 0.3s ease'
           }}>
-            <div className="form-group">
-              <label className="form-label" style={{ color: theme.onSurface }}>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                fontSize: '16px',
+                color: theme.onSurface 
+              }}>
                 <User size={20} />
                 First Name
               </label>
               <input
                 type="text"
-                value={studentInfo.firstName}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setStudentInfo(prev => ({ ...prev, firstName: newValue }));
-                }}
-                className="form-input"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 style={{ 
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: `2px solid ${studentInfoErrors.firstName ? theme.error : theme.outline}`,
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  outline: 'none',
+                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
-                  borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your first name"
-                autoComplete="given-name"
               />
               {studentInfoErrors.firstName && (
-                <p className="error-message" style={{ color: theme.error }}>
+                <p style={{ 
+                  marginTop: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: theme.error 
+                }}>
                   {studentInfoErrors.firstName}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <label className="form-label" style={{ color: theme.onSurface }}>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                fontSize: '16px',
+                color: theme.onSurface 
+              }}>
                 <User size={20} />
                 Last Name
               </label>
               <input
                 type="text"
-                value={studentInfo.lastName}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setStudentInfo(prev => ({ ...prev, lastName: newValue }));
-                }}
-                className="form-input"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 style={{ 
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: `2px solid ${studentInfoErrors.lastName ? theme.error : theme.outline}`,
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  outline: 'none',
+                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
-                  borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your last name"
-                autoComplete="family-name"
               />
               {studentInfoErrors.lastName && (
-                <p className="error-message" style={{ color: theme.error }}>
+                <p style={{ 
+                  marginTop: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: theme.error 
+                }}>
                   {studentInfoErrors.lastName}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <label className="form-label" style={{ color: theme.onSurface }}>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                fontSize: '16px',
+                color: theme.onSurface 
+              }}>
                 <CreditCard size={20} />
                 BU ID
               </label>
               <input
                 type="text"
-                value={studentInfo.buId}
+                value={buId}
                 onChange={(e) => {
                   const value = e.target.value.toUpperCase();
-                  // Allow only U followed by up to 8 digits
                   if (value === '' || /^U\d{0,8}$/.test(value)) {
-                    setStudentInfo(prev => ({ ...prev, buId: value }));
+                    setBuId(value);
                   }
                 }}
-                className="form-input"
                 style={{ 
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: `2px solid ${studentInfoErrors.buId ? theme.error : theme.outline}`,
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  outline: 'none',
+                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
-                  borderColor: studentInfoErrors.buId ? theme.error : theme.outline
                 }}
                 placeholder="U12345678"
                 maxLength={9}
-                autoComplete="off"
               />
               {studentInfoErrors.buId && (
-                <p className="error-message" style={{ color: theme.error }}>
+                <p style={{ 
+                  marginTop: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: theme.error 
+                }}>
                   {studentInfoErrors.buId}
                 </p>
               )}
             </div>
 
-            <div className="form-group">
-              <label className="form-label" style={{ color: theme.onSurface }}>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                fontSize: '16px',
+                color: theme.onSurface 
+              }}>
                 <Mail size={20} />
                 BU Email
               </label>
               <input
                 type="email"
-                value={studentInfo.email}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setStudentInfo(prev => ({ ...prev, email: newValue }));
-                }}
-                className="form-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 style={{ 
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: `2px solid ${studentInfoErrors.email ? theme.error : theme.outline}`,
+                  fontSize: '16px',
+                  transition: 'all 0.3s ease',
+                  outline: 'none',
+                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
-                  borderColor: studentInfoErrors.email ? theme.error : theme.outline
                 }}
                 placeholder="yourname@bu.edu"
-                autoComplete="email"
               />
               {studentInfoErrors.email && (
-                <p className="error-message" style={{ color: theme.error }}>
+                <p style={{ 
+                  marginTop: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: theme.error 
+                }}>
                   {studentInfoErrors.email}
                 </p>
               )}
@@ -1356,11 +1413,31 @@ const RoleMatch = () => {
 
             <button
               onClick={handleStudentInfoSubmit}
-              className="submit-btn"
               style={{ 
+                width: '100%',
+                padding: '16px 24px',
+                borderRadius: '9999px',
+                fontWeight: '600',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                marginTop: '32px',
                 backgroundColor: theme.primary,
                 color: theme.onPrimary,
                 boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
               }}
             >
               Start Assessment
@@ -1369,8 +1446,6 @@ const RoleMatch = () => {
           </div>
         </div>
       </div>
-
-      <ThemeToggle />
 
       <style jsx>{`
         .info-blob-1 {
@@ -1395,65 +1470,10 @@ const RoleMatch = () => {
           animation: float 25s ease-in-out infinite reverse;
         }
         
-        .form-card {
-          border-radius: 24px;
-          padding: 40px;
-          transition: all 0.3s ease;
-        }
-        
-        .form-group {
-          margin-bottom: 24px;
-        }
-        
-        .form-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          font-size: 16px;
-        }
-        
-        .form-input {
-          width: 100%;
-          padding: 12px 16px;
-          border-radius: 12px;
-          border: 2px solid;
-          font-size: 16px;
-          transition: all 0.3s ease;
-          outline: none;
-        }
-        
-        .form-input:focus {
-          border-color: ${theme.primary} !important;
-          box-shadow: 0 0 0 3px ${theme.primary}20;
-        }
-        
-        .error-message {
-          margin-top: 6px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        
-        .submit-btn {
-          width: 100%;
-          padding: 16px 24px;
-          border-radius: 9999px;
-          font-weight: 600;
-          font-size: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border: none;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 32px;
-        }
-        
-        .submit-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 100, 149, 0.4) !important;
+        @keyframes float {
+          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
         /* Common styles */
@@ -1466,6 +1486,15 @@ const RoleMatch = () => {
         .mb-8 { margin-bottom: 2rem; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .text-center { text-align: center; }
+        .relative { position: relative; }
+        .z-10 { z-index: 10; }
+        .absolute { position: absolute; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .overflow-hidden { overflow: hidden; }
+        .opacity-30 { opacity: 0.3; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .min-h-screen { min-height: 100vh; }
       `}</style>
     </div>
   );
@@ -1587,8 +1616,6 @@ const RoleMatch = () => {
         </div>
       </div>
 
-      <ThemeToggle />
-
       <style jsx>{`
         .section-card {
           padding: 24px;
@@ -1690,7 +1717,7 @@ const RoleMatch = () => {
                   RoleMatch Assessment
                 </h1>
                 <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
-                  {studentInfo.firstName} {studentInfo.lastName} ({studentInfo.buId})
+                  {firstName} {lastName} ({buId})
                 </p>
               </div>
               
@@ -1826,8 +1853,6 @@ const RoleMatch = () => {
             </div>
           </div>
         </div>
-
-        <ThemeToggle />
 
         <style jsx>{`
           .quiz-header {
@@ -2073,7 +2098,7 @@ const RoleMatch = () => {
             marginBottom: '24px',
             fontSize: '14px'
           }}>
-            <strong>{studentInfo.firstName} {studentInfo.lastName}</strong> • {studentInfo.buId} • {studentInfo.email}
+            <strong>{firstName} {lastName}</strong> • {buId} • {email}
           </div>
 
           {/* Results Cards with Character Animations */}
@@ -2223,8 +2248,6 @@ const RoleMatch = () => {
           )}
         </div>
       </div>
-
-      <ThemeToggle />
 
       <style jsx>{`
         .result-blob {
