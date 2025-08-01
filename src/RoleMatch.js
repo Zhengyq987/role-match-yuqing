@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard, Sun, Moon } from 'lucide-react';
 
 const RoleMatch = () => {
   const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'studentInfo', 'quiz', 'results', 'professor'
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
-  // Detect system dark mode preference
+  
+  // Use system dark mode preference
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     return false;
   });
-
+  
   // Listen for system theme changes
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -24,26 +25,74 @@ const RoleMatch = () => {
       if (mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
-      } 
-      // Older browsers
-      else if (mediaQuery.addListener) {
+      } else {
+        // Older browsers
         mediaQuery.addListener(handleChange);
         return () => mediaQuery.removeListener(handleChange);
       }
     }
   }, []);
+  
   const [isAnimating, setIsAnimating] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [shareNotification, setShareNotification] = useState('');
   const [hoveredRole, setHoveredRole] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   
-  // Student information state - using separate states to avoid re-render issues
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [buId, setBuId] = useState('');
-  const [email, setEmail] = useState('');
+  // Student information state
+  const [studentInfo, setStudentInfo] = useState(() => ({
+    firstName: '',
+    lastName: '',
+    buId: '',
+    email: ''
+  }));
   const [studentInfoErrors, setStudentInfoErrors] = useState({});
+
+  // Handle input changes - using event persist for safety
+  const handleInputChange = (field) => (e) => {
+    const { value } = e.target;
+    
+    // Only allow letters and spaces for names
+    if (field === 'firstName' || field === 'lastName') {
+      if (value === '' || /^[A-Za-z\s]*$/.test(value)) {
+        setStudentInfo(prev => ({
+          ...prev,
+          [field]: value
+        }));
+      }
+    } else {
+      setStudentInfo(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
+  };
+
+  // Handle BU ID change with validation
+  const handleBuIdChange = (e) => {
+    e.persist && e.persist(); // For older React versions
+    const value = e.target.value.toUpperCase();
+    // Allow only U followed by up to 8 digits
+    if (value === '' || /^U\d{0,8}$/.test(value)) {
+      setStudentInfo(prev => ({
+        ...prev,
+        buId: value
+      }));
+    }
+  };
+
+  // Debug: Log when component re-renders
+  useEffect(() => {
+    console.log('StudentInfo state:', studentInfo);
+  }, [studentInfo]);
+
+  // Create refs for inputs to avoid re-render issues
+  const inputRefs = {
+    firstName: React.useRef(null),
+    lastName: React.useRef(null),
+    buId: React.useRef(null),
+    email: React.useRef(null)
+  };
 
   // Material 3 Color Scheme
   const colors = {
@@ -350,29 +399,29 @@ const RoleMatch = () => {
   const validateStudentInfo = () => {
     const errors = {};
     
-    if (!firstName.trim()) {
+    if (!studentInfo.firstName.trim()) {
       errors.firstName = 'First name is required';
     }
     
-    if (!lastName.trim()) {
+    if (!studentInfo.lastName.trim()) {
       errors.lastName = 'Last name is required';
     }
     
     // BU ID validation - must start with U and be followed by 8 digits
     const buIdRegex = /^U\d{8}$/;
-    if (!buId.trim()) {
+    if (!studentInfo.buId.trim()) {
       errors.buId = 'BU ID is required';
-    } else if (!buIdRegex.test(buId)) {
+    } else if (!buIdRegex.test(studentInfo.buId)) {
       errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
     }
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
+    if (!studentInfo.email.trim()) {
       errors.email = 'Email is required';
-    } else if (!emailRegex.test(email)) {
+    } else if (!emailRegex.test(studentInfo.email)) {
       errors.email = 'Please enter a valid email address';
-    } else if (!email.toLowerCase().includes('bu.edu')) {
+    } else if (!studentInfo.email.toLowerCase().includes('bu.edu')) {
       errors.email = 'Please use your BU email address';
     }
     
@@ -380,9 +429,20 @@ const RoleMatch = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // Handle student info updates
+  const updateStudentInfo = (field, value) => {
+    setStudentInfo(prevState => ({
+      ...prevState,
+      [field]: value
+    }));
+  };
+
   // Handle student info submission
   const handleStudentInfoSubmit = () => {
-    if (validateStudentInfo()) {
+    console.log('Validating student info:', studentInfo);
+    const isValid = validateStudentInfo();
+    console.log('Validation result:', isValid, 'Errors:', studentInfoErrors);
+    if (isValid) {
       setCurrentPage('quiz');
     }
   };
@@ -552,10 +612,12 @@ const RoleMatch = () => {
     setAnswers({});
     setResults(null);
     setShowWarning(false);
-    setFirstName('');
-    setLastName('');
-    setBuId('');
-    setEmail('');
+    setStudentInfo({
+      firstName: '',
+      lastName: '',
+      buId: '',
+      email: ''
+    });
     setStudentInfoErrors({});
     setCurrentPage('studentInfo');
   };
@@ -563,16 +625,16 @@ const RoleMatch = () => {
   const exportToCSV = () => {
     if (!results) return;
     
-    let csv = "Student Name,BU ID,Email,Rank,Role,Score,Description\n";
-    results.recommendations.forEach(rec => {
-      csv += `"${firstName} ${lastName}","${buId}","${email}",${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
-    });
+    // Create a single row with all three recommendations
+    const roles = results.recommendations.map(rec => rec.roleInfo.name).join(',');
+    let csv = "Name,BU Email,BU ID,Role 1,Role 2,Role 3\n";
+    csv += `"${studentInfo.firstName} ${studentInfo.lastName}","${studentInfo.email}","${studentInfo.buId}",${results.recommendations.map(rec => `"${rec.roleInfo.name}"`).join(',')}\n`;
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rolematch-results-${buId}.csv`;
+    a.download = `rolematch-results-${studentInfo.buId}.csv`;
     a.click();
   };
 
@@ -586,7 +648,7 @@ const RoleMatch = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>RoleMatch Results - ${firstName} ${lastName}</title>
+          <title>RoleMatch Results - ${studentInfo.firstName} ${studentInfo.lastName}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
             
@@ -746,9 +808,9 @@ const RoleMatch = () => {
           
           <div class="student-info">
             <h2>Student Information</h2>
-            <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-            <p><strong>BU ID:</strong> ${buId}</p>
-            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Name:</strong> ${studentInfo.firstName} ${studentInfo.lastName}</p>
+            <p><strong>BU ID:</strong> ${studentInfo.buId}</p>
+            <p><strong>Email:</strong> ${studentInfo.email}</p>
           </div>
           
           ${results.recommendations.map(rec => `
@@ -828,6 +890,9 @@ const RoleMatch = () => {
     });
   };
 
+  // Theme Toggle Button Component
+  // Auto dark mode is enabled - no manual toggle needed
+
   // Landing Page Component
   const LandingPage = () => (
     <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
@@ -848,9 +913,21 @@ const RoleMatch = () => {
                 <button
                   onClick={() => setCurrentPage('about')}
                   className="nav-button px-4 py-2 rounded-full transition-all"
-                  style={{ color: theme.onSurfaceVariant }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = theme.elevation1}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  style={{ 
+                    color: theme.onSurface,
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${theme.outline}`,
+                    fontSize: '16px',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = theme.surfaceVariant;
+                    e.target.style.color = theme.onSurfaceVariant;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = theme.onSurface;
+                  }}
                 >
                   About
                 </button>
@@ -923,7 +1000,9 @@ const RoleMatch = () => {
                         backgroundColor: theme.elevation1,
                         border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
                         transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'visible'
                       }}
                       onMouseEnter={() => setHoveredRole(key)}
                       onMouseLeave={() => setHoveredRole(null)}
@@ -932,6 +1011,26 @@ const RoleMatch = () => {
                       <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
                         {role.name}
                       </h4>
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: `translateX(-50%) translateY(${hoveredRole === key ? '10px' : '0'})`,
+                        backgroundColor: theme.surface,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        opacity: hoveredRole === key ? 1 : 0,
+                        visibility: hoveredRole === key ? 'visible' : 'hidden',
+                        transition: 'all 0.3s ease',
+                        width: '200px',
+                        zIndex: 10,
+                        border: `1px solid ${theme.outline}`
+                      }}>
+                        <p style={{ color: theme.onSurface, fontSize: '14px' }}>
+                          {role.description}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -944,7 +1043,9 @@ const RoleMatch = () => {
                         backgroundColor: theme.elevation1,
                         border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
                         transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s ease',
+                        position: 'relative',
+                        overflow: 'visible'
                       }}
                       onMouseEnter={() => setHoveredRole(key)}
                       onMouseLeave={() => setHoveredRole(null)}
@@ -953,6 +1054,26 @@ const RoleMatch = () => {
                       <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
                         {role.name}
                       </h4>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: `translateX(-50%) translateY(${hoveredRole === key ? '-10px' : '0'})`,
+                        backgroundColor: theme.surface,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        opacity: hoveredRole === key ? 1 : 0,
+                        visibility: hoveredRole === key ? 'visible' : 'hidden',
+                        transition: 'all 0.3s ease',
+                        width: '200px',
+                        zIndex: 10,
+                        border: `1px solid ${theme.outline}`
+                      }}>
+                        <p style={{ color: theme.onSurface, fontSize: '14px' }}>
+                          {role.description}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1164,6 +1285,16 @@ const RoleMatch = () => {
           line-height: 1.5;
         }
         
+        input[type="text"],
+        input[type="email"] {
+          font-size: 16px !important; /* Prevents zoom on iOS */
+        }
+        
+        /* Prevent input field issues */
+        input {
+          -webkit-user-modify: read-write-plaintext-only;
+        }
+        
         /* Common styles */
         .min-h-screen { min-height: 100vh; }
         .max-w-4xl { max-width: 56rem; }
@@ -1203,7 +1334,69 @@ const RoleMatch = () => {
   );
 
   // Student Info Page Component
-  const StudentInfoPage = () => (
+  const StudentInfoPage = () => {
+    // Local state management for better performance
+    const [localInfo, setLocalInfo] = useState(studentInfo);
+    
+    const handleLocalInputChange = (field) => (e) => {
+      const { value } = e.target;
+      setLocalInfo(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    };
+    
+    const handleLocalBuIdChange = (e) => {
+      const value = e.target.value.toUpperCase();
+      if (value === '' || /^U\d{0,8}$/.test(value)) {
+        setLocalInfo(prev => ({
+          ...prev,
+          buId: value
+        }));
+      }
+    };
+    
+    const validateLocalInfo = () => {
+      const errors = {};
+      
+      if (!localInfo.firstName.trim()) {
+        errors.firstName = 'First name is required';
+      }
+      
+      if (!localInfo.lastName.trim()) {
+        errors.lastName = 'Last name is required';
+      }
+      
+      // BU ID validation - must start with U and be followed by 8 digits
+      const buIdRegex = /^U\d{8}$/;
+      if (!localInfo.buId.trim()) {
+        errors.buId = 'BU ID is required';
+      } else if (!buIdRegex.test(localInfo.buId)) {
+        errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
+      }
+      
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!localInfo.email.trim()) {
+        errors.email = 'Email is required';
+      } else if (!emailRegex.test(localInfo.email)) {
+        errors.email = 'Please enter a valid email address';
+      } else if (!localInfo.email.toLowerCase().includes('bu.edu')) {
+        errors.email = 'Please use your BU email address';
+      }
+      
+      setStudentInfoErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
+    
+    const handleSubmit = () => {
+      if (validateLocalInfo()) {
+        setStudentInfo(localInfo);
+        setCurrentPage('quiz');
+      }
+    };
+    
+    return (
     <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
       <div className="relative">
         {/* Animated background */}
@@ -1224,220 +1417,139 @@ const RoleMatch = () => {
           </div>
 
           {/* Form Card */}
-          <div style={{ 
+          <div className="form-card" style={{ 
             backgroundColor: theme.surface,
             boxShadow: darkMode 
               ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-              : '0 10px 40px rgba(0, 0, 0, 0.08)',
-            borderRadius: '24px',
-            padding: '40px',
-            transition: 'all 0.3s ease'
+              : '0 10px 40px rgba(0, 0, 0, 0.08)'
           }}>
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: '600',
-                marginBottom: '8px',
-                fontSize: '16px',
-                color: theme.onSurface 
-              }}>
+            <div className="form-group">
+              <label htmlFor="firstName" className="form-label" style={{ color: theme.onSurface }}>
                 <User size={20} />
                 First Name
               </label>
               <input
+                id="firstName"
+                name="firstName"
                 type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                inputMode="text"
+                value={localInfo.firstName}
+                onChange={handleLocalInputChange('firstName')}
+                className="form-input"
                 style={{ 
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${studentInfoErrors.firstName ? theme.error : theme.outline}`,
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  outline: 'none',
-                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
+                  borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your first name"
+                autoComplete="given-name"
+                spellCheck="false"
+                autoCapitalize="words"
+                data-testid="firstName-input"
               />
               {studentInfoErrors.firstName && (
-                <p style={{ 
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: theme.error 
-                }}>
+                <p className="error-message" style={{ color: theme.error }}>
                   {studentInfoErrors.firstName}
                 </p>
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: '600',
-                marginBottom: '8px',
-                fontSize: '16px',
-                color: theme.onSurface 
-              }}>
+            <div className="form-group">
+              <label htmlFor="lastName" className="form-label" style={{ color: theme.onSurface }}>
                 <User size={20} />
                 Last Name
               </label>
               <input
+                id="lastName"
+                name="lastName"
                 type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                value={localInfo.lastName}
+                onChange={handleLocalInputChange('lastName')}
+                className="form-input"
                 style={{ 
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${studentInfoErrors.lastName ? theme.error : theme.outline}`,
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  outline: 'none',
-                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
+                  borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
                 }}
                 placeholder="Enter your last name"
+                autoComplete="family-name"
+                spellCheck="false"
+                autoCapitalize="words"
               />
               {studentInfoErrors.lastName && (
-                <p style={{ 
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: theme.error 
-                }}>
+                <p className="error-message" style={{ color: theme.error }}>
                   {studentInfoErrors.lastName}
                 </p>
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: '600',
-                marginBottom: '8px',
-                fontSize: '16px',
-                color: theme.onSurface 
-              }}>
+            <div className="form-group">
+              <label htmlFor="buId" className="form-label" style={{ color: theme.onSurface }}>
                 <CreditCard size={20} />
                 BU ID
               </label>
               <input
+                id="buId"
+                name="buId"
                 type="text"
-                value={buId}
-                onChange={(e) => {
-                  const value = e.target.value.toUpperCase();
-                  if (value === '' || /^U\d{0,8}$/.test(value)) {
-                    setBuId(value);
-                  }
-                }}
+                value={localInfo.buId}
+                onChange={handleLocalBuIdChange}
+                className="form-input"
                 style={{ 
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${studentInfoErrors.buId ? theme.error : theme.outline}`,
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  outline: 'none',
-                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
+                  borderColor: studentInfoErrors.buId ? theme.error : theme.outline
                 }}
                 placeholder="U12345678"
                 maxLength={9}
+                autoComplete="off"
+                spellCheck="false"
+                autoCapitalize="characters"
               />
               {studentInfoErrors.buId && (
-                <p style={{ 
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: theme.error 
-                }}>
+                <p className="error-message" style={{ color: theme.error }}>
                   {studentInfoErrors.buId}
                 </p>
               )}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: '600',
-                marginBottom: '8px',
-                fontSize: '16px',
-                color: theme.onSurface 
-              }}>
+            <div className="form-group">
+              <label htmlFor="email" className="form-label" style={{ color: theme.onSurface }}>
                 <Mail size={20} />
                 BU Email
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                inputMode="email"
+                value={localInfo.email}
+                onChange={handleLocalInputChange('email')}
+                className="form-input"
                 style={{ 
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: `2px solid ${studentInfoErrors.email ? theme.error : theme.outline}`,
-                  fontSize: '16px',
-                  transition: 'all 0.3s ease',
-                  outline: 'none',
-                  boxSizing: 'border-box',
                   backgroundColor: theme.elevation1,
                   color: theme.onSurface,
+                  borderColor: studentInfoErrors.email ? theme.error : theme.outline
                 }}
                 placeholder="yourname@bu.edu"
+                autoComplete="email"
+                spellCheck="false"
+                autoCapitalize="off"
               />
               {studentInfoErrors.email && (
-                <p style={{ 
-                  marginTop: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: theme.error 
-                }}>
+                <p className="error-message" style={{ color: theme.error }}>
                   {studentInfoErrors.email}
                 </p>
               )}
             </div>
 
             <button
-              onClick={handleStudentInfoSubmit}
+              onClick={handleSubmit}
+              className="submit-btn"
               style={{ 
-                width: '100%',
-                padding: '16px 24px',
-                borderRadius: '9999px',
-                fontWeight: '600',
-                fontSize: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                marginTop: '32px',
                 backgroundColor: theme.primary,
                 color: theme.onPrimary,
                 boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
               }}
             >
               Start Assessment
@@ -1470,10 +1582,95 @@ const RoleMatch = () => {
           animation: float 25s ease-in-out infinite reverse;
         }
         
-        @keyframes float {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          33% { transform: translate(30px, -30px) rotate(120deg); }
-          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        .form-card {
+          border-radius: 24px;
+          padding: 40px;
+          transition: all 0.3s ease;
+        }
+        
+        .form-group {
+          margin-bottom: 24px;
+        }
+        
+        .form-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          font-size: 16px;
+        }
+        
+        .form-input {
+          width: 100%;
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 2px solid;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          outline: none;
+          box-sizing: border-box;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          display: block;
+          touch-action: manipulation;
+          position: relative;
+          z-index: 1;
+          background-clip: padding-box;
+        }
+        
+        .form-input:focus {
+          border-color: ${theme.primary} !important;
+          box-shadow: 0 0 0 3px ${theme.primary}20;
+        }
+        
+        .form-input::-webkit-inner-spin-button,
+        .form-input::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        
+        .form-input::-webkit-search-decoration,
+        .form-input::-webkit-search-cancel-button,
+        .form-input::-webkit-search-results-button,
+        .form-input::-webkit-search-results-decoration {
+          display: none;
+        }
+        
+        .form-input:-webkit-autofill,
+        .form-input:-webkit-autofill:hover,
+        .form-input:-webkit-autofill:focus {
+          -webkit-box-shadow: 0 0 0px 1000px ${theme.elevation1} inset !important;
+          -webkit-text-fill-color: ${theme.onSurface} !important;
+          caret-color: ${theme.onSurface} !important;
+        }
+        
+        .error-message {
+          margin-top: 6px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        
+        .submit-btn {
+          width: 100%;
+          padding: 16px 24px;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-size: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 32px;
+        }
+        
+        .submit-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(0, 100, 149, 0.4) !important;
         }
         
         /* Common styles */
@@ -1486,18 +1683,10 @@ const RoleMatch = () => {
         .mb-8 { margin-bottom: 2rem; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }
         .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .text-center { text-align: center; }
-        .relative { position: relative; }
-        .z-10 { z-index: 10; }
-        .absolute { position: absolute; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .overflow-hidden { overflow: hidden; }
-        .opacity-30 { opacity: 0.3; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .min-h-screen { min-height: 100vh; }
       `}</style>
     </div>
-  );
+    );
+  };
 
   // About Page Component
   const AboutPage = () => (
@@ -1510,22 +1699,23 @@ const RoleMatch = () => {
               onClick={() => setCurrentPage('landing')}
               className="home-button"
               style={{ 
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 16px',
+                padding: '12px 24px',
                 borderRadius: '12px',
-                backgroundColor: theme.elevation1,
-                color: theme.primary,
-                fontSize: '18px',
+                backgroundColor: theme.primaryContainer,
+                color: theme.onPrimaryContainer,
+                fontSize: '16px',
                 fontWeight: '600',
                 transition: 'all 0.3s ease',
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = theme.primaryContainer;
-                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.transform = 'scale(1.02)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = theme.elevation1;
@@ -1681,47 +1871,174 @@ const RoleMatch = () => {
 
           <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
             {/* Header with Home Button */}
-            <div className="quiz-header">
-              <button
-                onClick={() => setCurrentPage('landing')}
-                className="home-btn"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: theme.primary,
-                  padding: '10px 20px',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.primaryContainer;
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.elevation1;
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                <Home size={18} />
-                Home
-              </button>
-              
-              <div className="text-center flex-1">
-                <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
-                  RoleMatch Assessment
-                </h1>
-                <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
-                  {firstName} {lastName} ({buId})
-                </p>
+            <nav className="mb-8">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setCurrentPage('landing')}
+                  className="home-btn"
+                  style={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 24px',
+                    borderRadius: '12px',
+                    backgroundColor: theme.primaryContainer,
+                    color: theme.onPrimaryContainer,
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <Home size={20} />
+                  RoleMatch
+                </button>
               </div>
-              
-              <div style={{ width: '100px' }}></div> {/* Spacer for centering */}
+            </nav>
+            
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
+                RoleMatch Assessment
+              </h1>
+              <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
+                {studentInfo.firstName} {studentInfo.lastName} ({studentInfo.buId})
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium" style={{ color: theme.onSurfaceVariant }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </span>
+              </div>
+              <div className="progress-bar" style={{ backgroundColor: theme.surfaceVariant }}>
+                <div
+                  className="progress-fill"
+                  style={{ 
+                    width: `${progress}%`,
+                    background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Question Card */}
+            <div
+              className={`question-card ${isAnimating ? 'animating' : ''}`}
+              style={{ 
+                backgroundColor: theme.surface,
+                boxShadow: darkMode 
+                  ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
+                  : '0 10px 40px rgba(0, 0, 0, 0.08)'
+              }}
+            >
+              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.onSurface }}>
+                {questions[currentQuestion].text}
+              </h2>
+
+              {/* Warning Message */}
+              {showWarning && (
+                <div className="warning-message" style={{ backgroundColor: theme.error + '20' }}>
+                  <Info size={20} style={{ color: theme.error }} />
+                  <span style={{ color: theme.error }}>
+                    {questions[currentQuestion].type === 'multiple' 
+                      ? 'Please select at least one option' 
+                      : 'Please select an option'}
+                  </span>
+                </div>
+              )}
+
+              <div className="options-container">
+                {questions[currentQuestion].options.map((option, index) => {
+                  const question = questions[currentQuestion];
+                  const isSelected = question.type === 'single' 
+                    ? answers[question.id] === index
+                    : (answers[question.id] || []).includes(index);
+
+                  return (
+                    <div key={index} className="option-wrapper">
+                      <button
+                        onClick={() => {
+                          if (question.type === 'single') {
+                            handleAnswer(index, option);
+                          } else {
+                            handleMultipleAnswer(index, option);
+                          }
+                        }}
+                        className={`option-button ${isSelected ? 'selected' : ''}`}
+                        style={{ 
+                          backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
+                          color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
+                          borderColor: isSelected ? theme.primary : 'transparent',
+                          boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
+                        }}
+                      >
+                        <div className="option-content">
+                          {question.type === 'multiple' && (
+                            <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
+                                 style={{ 
+                                   backgroundColor: isSelected ? theme.primary : 'transparent',
+                                   borderColor: isSelected ? theme.primary : theme.outline
+                                 }}>
+                              {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
+                            </div>
+                          )}
+                          <span className="option-text">{option.text}</span>
+                        </div>
+                      </button>
+                      {selectedOption === option.roleKey && (
+                        <div className="role-popup">
+                          <RoleCharacter roleKey={option.roleKey} isAnimated={true} size="small" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Navigation */}
+              <div className="navigation">
+                <button
+                  onClick={prevQuestion}
+                  disabled={currentQuestion === 0}
+                  className={`nav-btn prev-btn ${currentQuestion === 0 ? 'disabled' : ''}`}
+                  style={{ 
+                    backgroundColor: currentQuestion === 0 ? theme.surfaceVariant : theme.elevation2,
+                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                  Previous
+                </button>
+
+                {questions[currentQuestion].type === 'multiple' && (
+                  <span className="select-hint" style={{ color: theme.onSurfaceVariant }}>
+                    Select all that apply
+                  </span>
+                )}
+
+                <button
+                  onClick={nextQuestion}
+                  className="nav-btn next-btn"
+                  style={{ 
+                    backgroundColor: theme.primary,
+                    color: theme.onPrimary,
+                    boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                  }}
+                >
+                  {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Progress Bar */}
@@ -1855,11 +2172,12 @@ const RoleMatch = () => {
         </div>
 
         <style jsx>{`
-          .quiz-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 32px;
+          .home-btn {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          }
+          
+          .home-btn:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           }
           
           .quiz-blob-1 {
@@ -2098,7 +2416,7 @@ const RoleMatch = () => {
             marginBottom: '24px',
             fontSize: '14px'
           }}>
-            <strong>{firstName} {lastName}</strong> • {buId} • {email}
+            <strong>{studentInfo.firstName} {studentInfo.lastName}</strong> • {studentInfo.buId} • {studentInfo.email}
           </div>
 
           {/* Results Cards with Character Animations */}
