@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
-  const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'studentInfo', 'quiz', 'results', 'professor'
+  const [currentPage, setCurrentPage] = useState('landing');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
@@ -21,12 +21,10 @@ const RoleMatch = () => {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = (e) => setDarkMode(e.matches);
       
-      // Modern browsers
       if (mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
       } else {
-        // Older browsers
         mediaQuery.addListener(handleChange);
         return () => mediaQuery.removeListener(handleChange);
       }
@@ -47,11 +45,6 @@ const RoleMatch = () => {
     email: ''
   }));
   const [studentInfoErrors, setStudentInfoErrors] = useState({});
-
-  // Debug: Log when component re-renders
-  useEffect(() => {
-    console.log('StudentInfo state:', studentInfo);
-  }, [studentInfo]);
 
   // Material 3 Color Scheme
   const colors = {
@@ -111,8 +104,7 @@ const RoleMatch = () => {
 
   const theme = darkMode ? colors.dark : colors.light;
 
-  // Role definitions with Lottie animations
-  /* eslint-disable no-unused-vars */
+  // Role definitions
   const roles = {
     RE: {
       name: "Requirements Engineer",
@@ -120,7 +112,6 @@ const RoleMatch = () => {
       skills: ["Documentation", "Analysis", "Communication", "Research"],
       icon: <Sparkles size={32} />,
       gradient: { from: theme.primary, to: theme.secondary },
-      lottieUrl: "https://lottie.host/d3f7d4d6-4f7e-4b8f-8f4f-6f8f8f8f8f8f/requirements-engineer.json",
       color: "#3B82F6"
     },
     CM: {
@@ -129,7 +120,6 @@ const RoleMatch = () => {
       skills: ["Organization", "Version Control", "Tool Management", "Documentation"],
       icon: <Settings size={32} />,
       gradient: { from: theme.secondary, to: theme.tertiary },
-      lottieUrl: "https://lottie.host/e4f5d5d7-5f8e-5c9f-9f5f-7f9f9f9f9f9f/config-manager.json",
       color: "#10B981"
     },
     Design: {
@@ -138,7 +128,6 @@ const RoleMatch = () => {
       skills: ["Architecture", "Diagramming", "System Planning", "Technical Design"],
       icon: <Code size={32} />,
       gradient: { from: theme.tertiary, to: theme.primary },
-      lottieUrl: "https://lottie.host/f5f6d6d8-6f9f-6d0f-0f6f-8f0f0f0f0f0f/system-designer.json",
       color: "#8B5CF6"
     },
     UX: {
@@ -147,7 +136,6 @@ const RoleMatch = () => {
       skills: ["UI Design", "Prototyping", "User Research", "Visual Design"],
       icon: <Palette size={32} />,
       gradient: { from: theme.primary, to: theme.tertiary },
-      lottieUrl: "https://lottie.host/a6f7d7d9-7f0f-7e1f-1f7f-9f1f1f1f1f1f/ux-designer.json",
       color: "#EC4899"
     },
     Test: {
@@ -156,7 +144,6 @@ const RoleMatch = () => {
       skills: ["Testing", "Debugging", "Quality Assurance", "Attention to Detail"],
       icon: <TestTube size={32} />,
       gradient: { from: theme.secondary, to: theme.primary },
-      lottieUrl: "https://lottie.host/b7f8d8e0-8f1f-8f2f-2f8f-0f2f2f2f2f2f/qa-tester.json",
       color: "#F59E0B"
     }
   };
@@ -320,86 +307,159 @@ const RoleMatch = () => {
     }
   ];
 
-  // Role Character Component
-  const RoleCharacter = ({ roleKey, isAnimated = false, size = 'medium' }) => {
-    const sizeClasses = {
-      small: 'w-12 h-12',
-      medium: 'w-24 h-24',
-      large: 'w-32 h-32'
+  // Enhanced Role Character Component with 16personalities-style animations
+  const RoleCharacter = ({ roleKey, isAnimated = false, size = 'medium', showSparkles = false, isHovered = false }) => {
+    const sizeMap = {
+      small: { w: 48, h: 48, icon: 20 },
+      medium: { w: 96, h: 96, icon: 32 },
+      large: { w: 128, h: 128, icon: 40 }
     };
 
-    const animationClasses = isAnimated ? 'animate-bounce' : '';
+    const dimensions = sizeMap[size];
     
-    // Using placeholder divs styled as characters for now
-    // In production, these would be replaced with Lottie animations
+    // Enhanced character styles with personality-based gradients and effects
     const characterStyles = {
-      RE: { background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' },
-      CM: { background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' },
-      Design: { background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)' },
-      UX: { background: 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)' },
-      Test: { background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' }
+      RE: { 
+        background: 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 50%, #2563EB 100%)',
+        personality: 'analytical',
+        hoverBg: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%)'
+      },
+      CM: { 
+        background: 'linear-gradient(135deg, #10B981 0%, #047857 50%, #059669 100%)',
+        personality: 'organized',
+        hoverBg: 'linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%)'
+      },
+      Design: { 
+        background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 50%, #7C3AED 100%)',
+        personality: 'creative-logical',
+        hoverBg: 'linear-gradient(135deg, #A78BFA 0%, #8B5CF6 50%, #7C3AED 100%)'
+      },  
+      UX: { 
+        background: 'linear-gradient(135deg, #EC4899 0%, #BE185D 50%, #DB2777 100%)',
+        personality: 'creative',
+        hoverBg: 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #DB2777 100%)'
+      },
+      Test: { 
+        background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F59E0B 100%)',
+        personality: 'detective',
+        hoverBg: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%)'
+      }
+    };
+
+    const style = characterStyles[roleKey];
+    const currentBg = isHovered ? style.hoverBg : style.background;
+
+    // Personality-based animation classes
+    const getPersonalityAnimation = () => {
+      switch (style.personality) {
+        case 'analytical': return isAnimated ? 'character-think' : '';
+        case 'organized': return isAnimated ? 'character-organize' : '';
+        case 'creative-logical': return isAnimated ? 'character-create-logic' : '';
+        case 'creative': return isAnimated ? 'character-create' : '';
+        case 'detective': return isAnimated ? 'character-investigate' : '';
+        default: return isAnimated ? 'character-bounce' : '';
+      }
     };
 
     return (
-      <div className={`role-character ${sizeClasses[size]} ${animationClasses}`}>
+      <div 
+        className={`role-character ${getPersonalityAnimation()} ${showSparkles ? 'character-sparkle' : ''}`}
+        style={{
+          width: `${dimensions.w}px`,
+          height: `${dimensions.h}px`,
+          position: 'relative',
+          transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {/* Main character circle */}
         <div 
           className="character-circle"
-          style={characterStyles[roleKey]}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: currentBg,
+            boxShadow: isHovered 
+              ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.1)' 
+              : '0 8px 32px rgba(0, 0, 0, 0.15)',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative',
+            overflow: 'visible'
+          }}
         >
+          {/* Character icon */}
           {React.cloneElement(roles[roleKey].icon, { 
-            size: size === 'small' ? 20 : size === 'medium' ? 32 : 40,
-            style: { color: '#ffffff' }
+            size: dimensions.icon,
+            style: { 
+              color: '#ffffff',
+              filter: isHovered ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none',
+              transition: 'all 0.3s ease'
+            }
           })}
+
+          {/* Personality ring animation */}
+          {isAnimated && (
+            <div 
+              className="personality-ring"
+              style={{
+                position: 'absolute',
+                inset: '-8px',
+                borderRadius: '50%',
+                border: '3px solid',
+                borderColor: 'rgba(255, 255, 255, 0.4)',
+                borderTopColor: 'rgba(255, 255, 255, 0.8)',
+                animation: 'personality-spin 2s linear infinite'
+              }}
+            />
+          )}
+
+          {/* Hover glow effect */}
+          {isHovered && (
+            <div 
+              className="character-glow"
+              style={{
+                position: 'absolute',
+                inset: '-12px',
+                borderRadius: '50%',
+                background: `conic-gradient(from 0deg, ${roles[roleKey].color}40, transparent, ${roles[roleKey].color}40)`,
+                animation: 'glow-rotate 3s linear infinite',
+                zIndex: -1
+              }}
+            />
+          )}
         </div>
+
+        {/* Enhanced sparkles for selection feedback */}
+        {showSparkles && (
+          <div className="sparkles-container">
+            <div className="sparkle sparkle-1" style={{ fontSize: '18px' }}>✨</div>
+            <div className="sparkle sparkle-2" style={{ fontSize: '16px' }}>⭐</div>
+            <div className="sparkle sparkle-3" style={{ fontSize: '14px' }}>💫</div>
+            <div className="sparkle sparkle-4" style={{ fontSize: '12px' }}>✨</div>
+            <div className="sparkle sparkle-5" style={{ fontSize: '16px' }}>⚡</div>
+          </div>
+        )}
+
+        {/* Personality indicator dots */}
+        {(isAnimated || isHovered) && (
+          <div className="personality-dots">
+            <div className="dot dot-1" style={{ backgroundColor: roles[roleKey].color }} />
+            <div className="dot dot-2" style={{ backgroundColor: roles[roleKey].color }} />
+            <div className="dot dot-3" style={{ backgroundColor: roles[roleKey].color }} />
+          </div>
+        )}
       </div>
     );
   };
 
-  // Validate student information
-  const validateStudentInfo = () => {
-    const errors = {};
-    
-    if (!studentInfo.firstName.trim()) {
-      errors.firstName = 'First name is required';
-    }
-    
-    if (!studentInfo.lastName.trim()) {
-      errors.lastName = 'Last name is required';
-    }
-    
-    // BU ID validation - must start with U and be followed by 8 digits
-    const buIdRegex = /^U\d{8}$/;
-    if (!studentInfo.buId.trim()) {
-      errors.buId = 'BU ID is required';
-    } else if (!buIdRegex.test(studentInfo.buId)) {
-      errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
-    }
-    
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!studentInfo.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!emailRegex.test(studentInfo.email)) {
-      errors.email = 'Please enter a valid email address';
-    } else if (!studentInfo.email.toLowerCase().includes('bu.edu')) {
-      errors.email = 'Please use your BU email address';
-    }
-    
-    setStudentInfoErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   // Calculate results
   const calculateResults = () => {
-    const scores = {
-      RE: 0,
-      CM: 0,
-      Design: 0,
-      UX: 0,
-      Test: 0
-    };
+    const scores = { RE: 0, CM: 0, Design: 0, UX: 0, Test: 0 };
 
-    // Calculate raw scores
     Object.entries(answers).forEach(([questionId, answer]) => {
       const question = questions.find(q => q.id === parseInt(questionId));
       if (!question) return;
@@ -423,14 +483,12 @@ const RoleMatch = () => {
       }
     });
 
-    // Normalize scores
     const maxScore = Math.max(...Object.values(scores));
     const normalizedScores = {};
     Object.entries(scores).forEach(([role, score]) => {
       normalizedScores[role] = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
     });
 
-    // Get top 3 recommendations
     const sortedRoles = Object.entries(normalizedScores)
       .filter(([_, score]) => score >= 20)
       .sort((a, b) => b[1] - a[1])
@@ -441,17 +499,13 @@ const RoleMatch = () => {
       role: role,
       score: score,
       roleInfo: roles[role],
-      explanation: generateExplanation(role, score, answers)
+      explanation: generateExplanation(role)
     }));
 
-    return {
-      recommendations,
-      rawScores: scores,
-      normalizedScores
-    };
+    return { recommendations, rawScores: scores, normalizedScores };
   };
 
-  const generateExplanation = (role, score, answers) => {
+  const generateExplanation = (role) => {
     const explanations = {
       RE: "Your responses show strong alignment with requirements engineering. You enjoy documentation, clear communication, and helping others understand project needs.",
       CM: "You demonstrate excellent organizational skills and attention to structure. Your preference for managing tools and maintaining order makes you ideal for configuration management.",
@@ -479,7 +533,7 @@ const RoleMatch = () => {
           submitAnswers();
         }
         setIsAnimating(false);
-      }, 800);
+      }, 1500);
     }
   };
 
@@ -497,9 +551,8 @@ const RoleMatch = () => {
         ...answers,
         [question.id]: [...currentAnswers, optionIndex]
       });
-      // Flash animation for selected option
       setSelectedOption(option.roleKey);
-      setTimeout(() => setSelectedOption(null), 500);
+      setTimeout(() => setSelectedOption(null), 1000);
     }
     setShowWarning(false);
   };
@@ -507,13 +560,11 @@ const RoleMatch = () => {
   const nextQuestion = () => {
     const question = questions[currentQuestion];
     
-    // Validation for single choice questions
     if (question.type === 'single' && answers[question.id] === undefined) {
       setShowWarning(true);
       return;
     }
     
-    // Validation for multiple choice questions
     if (question.type === 'multiple' && (!answers[question.id] || answers[question.id].length === 0)) {
       setShowWarning(true);
       return;
@@ -554,21 +605,13 @@ const RoleMatch = () => {
     setAnswers({});
     setResults(null);
     setShowWarning(false);
-    setStudentInfo({
-      firstName: '',
-      lastName: '',
-      buId: '',
-      email: ''
-    });
+    setStudentInfo({ firstName: '', lastName: '', buId: '', email: '' });
     setStudentInfoErrors({});
     setCurrentPage('studentInfo');
   };
 
   const exportToCSV = () => {
     if (!results) return;
-    
-    // Create a single row with all three recommendations
-    const roles = results.recommendations.map(rec => rec.roleInfo.name).join(',');
     let csv = "Name,BU Email,BU ID,Role 1,Role 2,Role 3\n";
     csv += `"${studentInfo.firstName} ${studentInfo.lastName}","${studentInfo.email}","${studentInfo.buId}",${results.recommendations.map(rec => `"${rec.roleInfo.name}"`).join(',')}\n`;
     
@@ -582,218 +625,7 @@ const RoleMatch = () => {
 
   const exportToPDF = () => {
     if (!results) return;
-    
-    // Create a new window with printable content
-    const printWindow = window.open('', '_blank');
-    
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>RoleMatch Results - ${studentInfo.firstName} ${studentInfo.lastName}</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-            
-            body {
-              font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-              margin: 0;
-              padding: 40px;
-              background: #ffffff;
-              color: #1a1c1e;
-              line-height: 1.6;
-            }
-            
-            .header {
-              text-align: center;
-              margin-bottom: 40px;
-              padding-bottom: 20px;
-              border-bottom: 2px solid #e5e7eb;
-            }
-            
-            .header h1 {
-              color: #006495;
-              font-size: 36px;
-              margin: 0 0 10px 0;
-            }
-            
-            .header p {
-              color: #6b7280;
-              font-size: 16px;
-              margin: 0;
-            }
-            
-            .student-info {
-              background: #f3f4f6;
-              border-radius: 12px;
-              padding: 20px;
-              margin-bottom: 30px;
-            }
-            
-            .student-info h2 {
-              color: #1a1c1e;
-              font-size: 20px;
-              margin: 0 0 12px 0;
-            }
-            
-            .student-info p {
-              margin: 4px 0;
-              color: #4b5563;
-            }
-            
-            .result-card {
-              background: #f9fafb;
-              border-radius: 16px;
-              padding: 24px;
-              margin-bottom: 24px;
-              border: 1px solid #e5e7eb;
-              page-break-inside: avoid;
-            }
-            
-            .result-header {
-              display: flex;
-              align-items: center;
-              margin-bottom: 16px;
-            }
-            
-            .rank-circle {
-              width: 48px;
-              height: 48px;
-              background: #006495;
-              color: white;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 24px;
-              font-weight: bold;
-              margin-right: 16px;
-            }
-            
-            .role-info h2 {
-              margin: 0;
-              color: #1a1c1e;
-              font-size: 24px;
-            }
-            
-            .match-percentage {
-              color: #006495;
-              font-weight: 600;
-              font-size: 18px;
-              margin: 4px 0 0 0;
-            }
-            
-            .description {
-              color: #4b5563;
-              margin: 16px 0;
-              font-style: italic;
-            }
-            
-            .explanation {
-              color: #1a1c1e;
-              margin: 16px 0;
-            }
-            
-            .skills {
-              margin-top: 16px;
-            }
-            
-            .skills-label {
-              font-weight: 600;
-              color: #1a1c1e;
-              margin-bottom: 8px;
-            }
-            
-            .skill-tags {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 8px;
-            }
-            
-            .skill-tag {
-              background: #e5e7eb;
-              color: #374151;
-              padding: 6px 16px;
-              border-radius: 20px;
-              font-size: 14px;
-            }
-            
-            .footer {
-              margin-top: 40px;
-              padding-top: 20px;
-              border-top: 2px solid #e5e7eb;
-              text-align: center;
-              color: #6b7280;
-              font-size: 14px;
-            }
-            
-            @media print {
-              body {
-                padding: 20px;
-              }
-              
-              .result-card {
-                page-break-inside: avoid;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>RoleMatch Results</h1>
-            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}</p>
-          </div>
-          
-          <div class="student-info">
-            <h2>Student Information</h2>
-            <p><strong>Name:</strong> ${studentInfo.firstName} ${studentInfo.lastName}</p>
-            <p><strong>BU ID:</strong> ${studentInfo.buId}</p>
-            <p><strong>Email:</strong> ${studentInfo.email}</p>
-          </div>
-          
-          ${results.recommendations.map(rec => `
-            <div class="result-card">
-              <div class="result-header">
-                <div class="rank-circle">${rec.rank}</div>
-                <div class="role-info">
-                  <h2>${rec.roleInfo.name}</h2>
-                  <p class="match-percentage">${rec.score}% Match</p>
-                </div>
-              </div>
-              
-              <p class="description">${rec.roleInfo.description}</p>
-              <p class="explanation">${rec.explanation}</p>
-              
-              <div class="skills">
-                <p class="skills-label">Key Skills:</p>
-                <div class="skill-tags">
-                  ${rec.roleInfo.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                </div>
-              </div>
-            </div>
-          `).join('')}
-          
-          <div class="footer">
-            <p>RoleMatch - Smart Role Recommender for CS673 Software Engineering</p>
-            <p>Find your perfect team role at rolematch.app</p>
-          </div>
-          
-          <script>
-            // Auto-trigger print dialog
-            window.onload = function() {
-              window.print();
-            }
-          </script>
-        </body>
-      </html>
-    `;
-    
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    window.print();
   };
 
   const shareResults = async () => {
@@ -805,19 +637,14 @@ const RoleMatch = () => {
     
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: 'RoleMatch Results',
-          text: text
-        });
+        await navigator.share({ title: 'RoleMatch Results', text: text });
         setShareNotification('Results shared successfully!');
       } catch (err) {
         if (err.name !== 'AbortError') {
-          // Fallback to clipboard
           copyToClipboard(text);
         }
       }
     } else {
-      // Fallback to clipboard
       copyToClipboard(text);
     }
     
@@ -832,87 +659,75 @@ const RoleMatch = () => {
     });
   };
 
-  // Theme Toggle Button Component
-  // Auto dark mode is enabled - no manual toggle needed
-
   // Landing Page Component
   const LandingPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
-      <div className="relative">
-        {/* Animated background shapes */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="blob blob-1" style={{ backgroundColor: theme.primary }}></div>
-          <div className="blob blob-2" style={{ backgroundColor: theme.secondary }}></div>
-          <div className="blob blob-3" style={{ backgroundColor: theme.tertiary }}></div>
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
+        {/* Animated background */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <div style={{ 
+            position: 'absolute', width: '400px', height: '400px', 
+            top: '-200px', right: '-200px', borderRadius: '50%', 
+            backgroundColor: theme.primary, opacity: 0.1, filter: 'blur(80px)',
+            animation: 'float 20s ease-in-out infinite'
+          }}></div>
+          <div style={{ 
+            position: 'absolute', width: '350px', height: '350px', 
+            bottom: '-175px', left: '-175px', borderRadius: '50%', 
+            backgroundColor: theme.secondary, opacity: 0.1, filter: 'blur(80px)',
+            animation: 'float 25s ease-in-out infinite reverse'
+          }}></div>
         </div>
 
-        <div className="relative z-10">
+        <div style={{ position: 'relative', zIndex: 10 }}>
           {/* Navigation */}
-          <nav className="px-6 py-4">
-            <div className="max-w-7xl mx-auto flex justify-between items-center">
-              <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>RoleMatch</h1>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setCurrentPage('about')}
-                  className="nav-button px-4 py-2 rounded-full transition-all"
-                  style={{ 
-                    color: theme.onSurface,
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${theme.outline}`,
-                    fontSize: '16px',
-                    fontWeight: '500'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = theme.surfaceVariant;
-                    e.target.style.color = theme.onSurfaceVariant;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = theme.onSurface;
-                  }}
-                >
-                  About
-                </button>
-              </div>
+          <nav style={{ padding: '24px' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: theme.primary }}>RoleMatch</h1>
+              <button
+                onClick={() => setCurrentPage('about')}
+                style={{ 
+                  color: theme.onSurface, backgroundColor: 'transparent',
+                  border: `1px solid ${theme.outline}`, fontSize: '16px', fontWeight: '500',
+                  padding: '8px 16px', borderRadius: '9999px', cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = theme.surfaceVariant;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                About
+              </button>
             </div>
           </nav>
 
           {/* Hero Section */}
-          <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-            <div className="mb-8">
-              <h2 className="text-6xl font-bold mb-6" style={{ color: theme.onBackground }}>
+          <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '3.75rem', fontWeight: '700', marginBottom: '24px', color: theme.onBackground }}>
                 Find Your Perfect<br />
-                <span className="gradient-text" style={{ 
+                <span style={{ 
                   background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  display: 'inline-block'
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text', display: 'inline-block'
                 }}>Team Role</span>
               </h2>
-              <p className="text-xl mb-8" style={{ color: theme.onSurfaceVariant }}>
+              <p style={{ fontSize: '1.25rem', marginBottom: '32px', color: theme.onSurfaceVariant }}>
                 Discover where you'll thrive in your next software engineering project with our intelligent role matching system
               </p>
             </div>
 
             <button
               onClick={() => setCurrentPage('studentInfo')}
-              className="primary-button group"
               style={{ 
-                backgroundColor: theme.primary,
-                color: theme.onPrimary,
+                backgroundColor: theme.primary, color: theme.onPrimary,
                 boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
-                padding: '16px 32px',
-                borderRadius: '9999px',
-                fontSize: '18px',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.3s ease',
-                transform: 'translateY(0)',
-                border: 'none',
-                cursor: 'pointer'
+                padding: '16px 32px', borderRadius: '9999px', fontSize: '18px', fontWeight: '600',
+                display: 'inline-flex', alignItems: 'center', gap: '12px',
+                transition: 'all 0.3s ease', border: 'none', cursor: 'pointer'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -924,98 +739,176 @@ const RoleMatch = () => {
               }}
             >
               Start Assessment
-              <ArrowRight size={20} className="arrow-icon" />
+              <ArrowRight size={20} />
             </button>
 
-            {/* Role Preview - moved here above features */}
-            <div className="mt-20 mb-16">
-              <h3 className="text-2xl font-semibold mb-8" style={{ color: theme.onSurface }}>
+            {/* Role Preview Section */}
+            <div style={{ marginTop: '80px', marginBottom: '64px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '32px', color: theme.onSurface, textAlign: 'center' }}>
                 Discover Your Role Among
               </h3>
-              <div className="role-grid-container">
-                <div className="role-grid-top">
+              <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px' }}>
+                {/* Top row - 3 roles */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  gap: '24px', 
+                  marginBottom: '24px',
+                  flexWrap: 'wrap'
+                }}>
                   {Object.entries(roles).slice(0, 3).map(([key, role]) => (
                     <div 
                       key={key} 
-                      className="role-card"
                       style={{ 
                         backgroundColor: theme.elevation1,
-                        border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
-                        transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'all 0.3s ease',
+                        border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
+                        transform: hoveredRole === key ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: '28px', 
+                        borderRadius: '28px', 
+                        textAlign: 'center', 
+                        cursor: 'pointer',
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        minWidth: '180px',
+                        maxWidth: '200px',
+                        boxShadow: hoveredRole === key 
+                          ? `0 20px 60px ${role.color}30, 0 8px 32px rgba(0, 0, 0, 0.15)` 
+                          : '0 4px 16px rgba(0, 0, 0, 0.08)',
                         position: 'relative',
                         overflow: 'visible'
                       }}
                       onMouseEnter={() => setHoveredRole(key)}
                       onMouseLeave={() => setHoveredRole(null)}
                     >
-                      <RoleCharacter roleKey={key} isAnimated={hoveredRole === key} size="medium" />
-                      <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
+                      <RoleCharacter 
+                        roleKey={key} 
+                        isAnimated={hoveredRole === key} 
+                        isHovered={hoveredRole === key}
+                        size="medium" 
+                      />
+                      <h4 style={{ 
+                        color: theme.onSurface, 
+                        marginTop: '20px', 
+                        fontWeight: '600',
+                        fontSize: '15px',
+                        lineHeight: '1.3',
+                        transition: 'all 0.3s ease',
+                        transform: hoveredRole === key ? 'translateY(-2px)' : 'translateY(0)'
+                      }}>
                         {role.name}
                       </h4>
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '50%',
-                        transform: `translateX(-50%) translateY(${hoveredRole === key ? '10px' : '0'})`,
-                        backgroundColor: theme.surface,
-                        padding: '12px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-                        opacity: hoveredRole === key ? 1 : 0,
-                        visibility: hoveredRole === key ? 'visible' : 'hidden',
-                        transition: 'all 0.3s ease',
-                        width: '200px',
-                        zIndex: 10,
-                        border: `1px solid ${theme.outline}`
-                      }}>
-                        <p style={{ color: theme.onSurface, fontSize: '14px' }}>
-                          {role.description}
-                        </p>
-                      </div>
+                      
+                      {/* Hover tooltip */}
+                      {hoveredRole === key && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%) translateY(10px)',
+                          backgroundColor: theme.surface,
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                          width: '220px',
+                          zIndex: 10,
+                          border: `2px solid ${role.color}`,
+                          animation: 'tooltip-appear 0.3s ease-out'
+                        }}>
+                          <p style={{ 
+                            color: theme.onSurface, 
+                            fontSize: '13px', 
+                            lineHeight: '1.4',
+                            margin: 0,
+                            textAlign: 'center'
+                          }}>
+                            {role.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
-                <div className="role-grid-bottom">
+                
+                {/* Bottom row - 2 roles centered */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  gap: '24px',
+                  flexWrap: 'wrap'
+                }}>
                   {Object.entries(roles).slice(3, 5).map(([key, role]) => (
                     <div 
                       key={key} 
-                      className="role-card"
                       style={{ 
                         backgroundColor: theme.elevation1,
-                        border: `2px solid ${hoveredRole === key ? role.color : 'transparent'}`,
-                        transform: hoveredRole === key ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'all 0.3s ease',
+                        border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
+                        transform: hoveredRole === key ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: '28px', 
+                        borderRadius: '28px', 
+                        textAlign: 'center', 
+                        cursor: 'pointer',
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        minWidth: '180px',
+                        maxWidth: '200px',
+                        boxShadow: hoveredRole === key 
+                          ? `0 20px 60px ${role.color}30, 0 8px 32px rgba(0, 0, 0, 0.15)` 
+                          : '0 4px 16px rgba(0, 0, 0, 0.08)',
                         position: 'relative',
                         overflow: 'visible'
                       }}
                       onMouseEnter={() => setHoveredRole(key)}
                       onMouseLeave={() => setHoveredRole(null)}
                     >
-                      <RoleCharacter roleKey={key} isAnimated={hoveredRole === key} size="medium" />
-                      <h4 style={{ color: theme.onSurface, marginTop: '12px', fontWeight: '600' }}>
+                      <RoleCharacter 
+                        roleKey={key} 
+                        isAnimated={hoveredRole === key} 
+                        isHovered={hoveredRole === key}
+                        size="medium" 
+                      />
+                      <h4 style={{ 
+                        color: theme.onSurface, 
+                        marginTop: '20px', 
+                        fontWeight: '600',
+                        fontSize: '15px',
+                        lineHeight: '1.3',
+                        transition: 'all 0.3s ease',
+                        transform: hoveredRole === key ? 'translateY(-2px)' : 'translateY(0)'
+                      }}>
                         {role.name}
                       </h4>
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '100%',
-                        left: '50%',
-                        transform: `translateX(-50%) translateY(${hoveredRole === key ? '-10px' : '0'})`,
-                        backgroundColor: theme.surface,
-                        padding: '12px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-                        opacity: hoveredRole === key ? 1 : 0,
-                        visibility: hoveredRole === key ? 'visible' : 'hidden',
-                        transition: 'all 0.3s ease',
-                        width: '200px',
-                        zIndex: 10,
-                        border: `1px solid ${theme.outline}`
-                      }}>
-                        <p style={{ color: theme.onSurface, fontSize: '14px' }}>
-                          {role.description}
-                        </p>
-                      </div>
+                      
+                      {/* Hover tooltip */}
+                      {hoveredRole === key && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%) translateY(-10px)',
+                          backgroundColor: theme.surface,
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                          width: '220px',
+                          zIndex: 10,
+                          border: `2px solid ${role.color}`,
+                          animation: 'tooltip-appear 0.3s ease-out'
+                        }}>
+                          <p style={{ 
+                            color: theme.onSurface, 
+                            fontSize: '13px', 
+                            lineHeight: '1.4',
+                            margin: 0,
+                            textAlign: 'center'
+                          }}>
+                            {role.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1023,31 +916,139 @@ const RoleMatch = () => {
             </div>
 
             {/* Features */}
-            <div className="features-grid" style={{ marginBottom: '80px' }}>
-              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
-                <div className="feature-icon" style={{ backgroundColor: theme.primaryContainer }}>
-                  <Zap size={24} style={{ color: theme.onPrimaryContainer }} />
+            <div style={{ 
+              maxWidth: '900px', 
+              margin: '80px auto 40px auto', 
+              padding: '0 20px'
+            }}>
+              {/* First row - 2 cards */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                gap: '32px', 
+                marginBottom: '32px',
+                maxWidth: '600px',
+                margin: '0 auto 32px auto'
+              }}>
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.primaryContainer 
+                  }}>
+                    <Zap size={28} style={{ color: theme.onPrimaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Quick & Easy
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Complete the assessment in under 5 minutes
+                  </p>
                 </div>
-                <h3 style={{ color: theme.onSurface }}>Quick & Easy</h3>
-                <p style={{ color: theme.onSurfaceVariant }}>Complete the assessment in under 5 minutes</p>
+
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.secondaryContainer 
+                  }}>
+                    <Target size={28} style={{ color: theme.onSecondaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Accurate Matching
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Smart algorithm analyzes your skills and preferences
+                  </p>
+                </div>
               </div>
 
-              <div className="feature-card" style={{ backgroundColor: theme.elevation1 }}>
-                <div className="feature-icon" style={{ backgroundColor: theme.secondaryContainer }}>
-                  <Target size={24} style={{ color: theme.onSecondaryContainer }} />
+              {/* Second row - 1 centered card */}
+              <div style={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '40px'
+              }}>
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                  maxWidth: '320px',
+                  width: '100%'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.tertiaryContainer 
+                  }}>
+                    <Users size={28} style={{ color: theme.onTertiaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Better Teams
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Build stronger, more effective project teams
+                  </p>
                 </div>
-                <h3 style={{ color: theme.onSurface }}>Accurate Matching</h3>
-                <p style={{ color: theme.onSurfaceVariant }}>Smart algorithm analyzes your skills and preferences</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '80px' }}>
-              <div className="feature-card" style={{ backgroundColor: theme.elevation1, maxWidth: '320px' }}>
-                <div className="feature-icon" style={{ backgroundColor: theme.tertiaryContainer }}>
-                  <Users size={24} style={{ color: theme.onTertiaryContainer }} />
-                </div>
-                <h3 style={{ color: theme.onSurface }}>Better Teams</h3>
-                <p style={{ color: theme.onSurfaceVariant }}>Build stronger, more effective project teams</p>
               </div>
             </div>
           </div>
@@ -1057,41 +1058,7 @@ const RoleMatch = () => {
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
-        * {
-          font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        .blob {
-          position: absolute;
-          border-radius: 50%;
-          opacity: 0.1;
-          filter: blur(80px);
-        }
-        
-        .blob-1 {
-          width: 400px;
-          height: 400px;
-          top: -200px;
-          right: -200px;
-          animation: float 20s ease-in-out infinite;
-        }
-        
-        .blob-2 {
-          width: 350px;
-          height: 350px;
-          bottom: -175px;
-          left: -175px;
-          animation: float 25s ease-in-out infinite reverse;
-        }
-        
-        .blob-3 {
-          width: 300px;
-          height: 300px;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          animation: pulse 15s ease-in-out infinite;
-        }
+        * { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
         
         @keyframes float {
           0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
@@ -1099,219 +1066,40 @@ const RoleMatch = () => {
           66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
-        @keyframes pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
-          50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.15; }
-        }
-        
-        @keyframes bounce {
+        @keyframes character-bounce {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
+          50% { transform: translateY(-15px); }
         }
         
-        .arrow-icon {
-          transition: transform 0.3s ease;
+        .character-bounce {
+          animation: character-bounce 0.8s ease-in-out infinite;
         }
-        
-        .primary-button:hover .arrow-icon {
-          transform: translateX(4px);
-        }
-        
-        .role-grid-container {
-          max-width: 800px;
-          margin: 0 auto;
-        }
-        
-        .role-grid-top {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          margin-bottom: 20px;
-        }
-        
-        .role-grid-bottom {
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-        }
-        
-        .role-card {
-          padding: 20px;
-          border-radius: 20px;
-          text-align: center;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 100%;
-          max-width: 200px;
-        }
-        
-        .role-character {
-          position: relative;
-        }
-        
-        .character-circle {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .animate-bounce {
-          animation: bounce 1s ease-in-out infinite;
-        }
-        
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 24px;
-          margin-top: 80px;
-          max-width: 640px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        
-        @media (max-width: 640px) {
-          .features-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .role-grid-top {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          
-          .role-grid-bottom {
-            flex-direction: column;
-            align-items: center;
-          }
-          
-          .role-card {
-            max-width: 150px;
-          }
-        }
-        
-        .feature-card {
-          padding: 24px;
-          border-radius: 24px;
-          transition: all 0.3s ease;
-          cursor: default;
-        }
-        
-        .feature-card:hover {
-          transform: scale(1.05);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-        }
-        
-        .feature-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 16px;
-        }
-        
-        .feature-card h3 {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 8px;
-        }
-        
-        .feature-card p {
-          font-size: 14px;
-          line-height: 1.5;
-        }
-        
-        input[type="text"],
-        input[type="email"] {
-          font-size: 16px !important; /* Prevents zoom on iOS */
-        }
-        
-        /* Prevent input field issues */
-        input {
-          -webkit-user-modify: read-write-plaintext-only;
-        }
-        
-        /* Common styles */
-        .min-h-screen { min-height: 100vh; }
-        .max-w-4xl { max-width: 56rem; }
-        .max-w-7xl { max-width: 80rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .relative { position: relative; }
-        .absolute { position: absolute; }
-        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-        .z-10 { z-index: 10; }
-        .overflow-hidden { overflow: hidden; }
-        .text-center { text-align: center; }
-        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-        .text-6xl { font-size: 3.75rem; line-height: 1; }
-        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-        .font-bold { font-weight: 700; }
-        .font-semibold { font-weight: 600; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .mb-12 { margin-bottom: 3rem; }
-        .mb-16 { margin-bottom: 4rem; }
-        .mt-20 { margin-top: 5rem; }
-        .gap-4 { gap: 1rem; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-center { justify-content: center; }
-        .flex-wrap { flex-wrap: wrap; }
-        .rounded-full { border-radius: 9999px; }
-        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
       `}</style>
     </div>
   );
 
   // Student Info Page Component
   const StudentInfoPage = () => {
-    // Local state management for better performance
     const [localInfo, setLocalInfo] = useState(studentInfo);
     
-    // eslint-disable-next-line no-unused-vars
     const handleLocalInputChange = (field) => (e) => {
       const { value } = e.target;
-      setLocalInfo(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      setLocalInfo(prev => ({ ...prev, [field]: value }));
     };
     
-    // eslint-disable-next-line no-unused-vars
     const handleLocalBuIdChange = (e) => {
       const value = e.target.value.toUpperCase();
       if (value === '' || /^U\d{0,8}$/.test(value)) {
-        setLocalInfo(prev => ({
-          ...prev,
-          buId: value
-        }));
+        setLocalInfo(prev => ({ ...prev, buId: value }));
       }
     };
     
     const validateLocalInfo = () => {
       const errors = {};
       
-      if (!localInfo.firstName.trim()) {
-        errors.firstName = 'First name is required';
-      }
+      if (!localInfo.firstName.trim()) errors.firstName = 'First name is required';
+      if (!localInfo.lastName.trim()) errors.lastName = 'Last name is required';
       
-      if (!localInfo.lastName.trim()) {
-        errors.lastName = 'Last name is required';
-      }
-      
-      // BU ID validation - must start with U and be followed by 8 digits
       const buIdRegex = /^U\d{8}$/;
       if (!localInfo.buId.trim()) {
         errors.buId = 'BU ID is required';
@@ -1319,7 +1107,6 @@ const RoleMatch = () => {
         errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
       }
       
-      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!localInfo.email.trim()) {
         errors.email = 'Email is required';
@@ -1341,329 +1128,213 @@ const RoleMatch = () => {
     };
     
     return (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
-      <div className="relative">
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden opacity-30">
-          <div className="info-blob-1" style={{ backgroundColor: theme.primary }}></div>
-          <div className="info-blob-2" style={{ backgroundColor: theme.secondary }}></div>
-        </div>
-
-        <div className="relative z-10 container mx-auto px-4 py-8 max-w-2xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
-              Student Information
-            </h1>
-            <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
-              Please enter your details to begin the assessment
-            </p>
+      <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              top: '10%', left: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.primary, filter: 'blur(80px)',
+              animation: 'float 20s ease-in-out infinite'
+            }}></div>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              bottom: '10%', right: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.secondary, filter: 'blur(80px)',
+              animation: 'float 25s ease-in-out infinite reverse'
+            }}></div>
           </div>
 
-          {/* Form Card */}
-          <div className="form-card" style={{ 
-            backgroundColor: theme.surface,
-            boxShadow: darkMode 
-              ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-              : '0 10px 40px rgba(0, 0, 0, 0.08)'
-          }}>
-            <div className="form-group">
-              <label htmlFor="firstName" className="form-label" style={{ color: theme.onSurface }}>
-                <User size={20} />
-                First Name
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                inputMode="text"
-                value={localInfo.firstName}
-                onChange={handleLocalInputChange('firstName')}
-                className="form-input"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: theme.onSurface,
-                  borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
-                }}
-                placeholder="Enter your first name"
-                autoComplete="given-name"
-                spellCheck="false"
-                autoCapitalize="words"
-                data-testid="firstName-input"
-              />
-              {studentInfoErrors.firstName && (
-                <p className="error-message" style={{ color: theme.error }}>
-                  {studentInfoErrors.firstName}
-                </p>
-              )}
+          <div style={{ position: 'relative', zIndex: 10, maxWidth: '42rem', margin: '0 auto', padding: '32px 16px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '8px', color: theme.onBackground }}>
+                Student Information
+              </h1>
+              <p style={{ fontSize: '1.125rem', color: theme.onSurfaceVariant }}>
+                Please enter your details to begin the assessment
+              </p>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="lastName" className="form-label" style={{ color: theme.onSurface }}>
-                <User size={20} />
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={localInfo.lastName}
-                onChange={handleLocalInputChange('lastName')}
-                className="form-input"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: theme.onSurface,
-                  borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
-                }}
-                placeholder="Enter your last name"
-                autoComplete="family-name"
-                spellCheck="false"
-                autoCapitalize="words"
-              />
-              {studentInfoErrors.lastName && (
-                <p className="error-message" style={{ color: theme.error }}>
-                  {studentInfoErrors.lastName}
-                </p>
-              )}
-            </div>
+            <div style={{ 
+              backgroundColor: theme.surface,
+              boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+              borderRadius: '24px', padding: '40px'
+            }}>
+              {/* First Name */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <User size={20} />
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.firstName}
+                  onChange={handleLocalInputChange('firstName')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
+                  }}
+                  placeholder="Enter your first name"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.firstName ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.firstName && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.firstName}
+                  </p>
+                )}
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="buId" className="form-label" style={{ color: theme.onSurface }}>
-                <CreditCard size={20} />
-                BU ID
-              </label>
-              <input
-                id="buId"
-                name="buId"
-                type="text"
-                value={localInfo.buId}
-                onChange={handleLocalBuIdChange}
-                className="form-input"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: theme.onSurface,
-                  borderColor: studentInfoErrors.buId ? theme.error : theme.outline
-                }}
-                placeholder="U12345678"
-                maxLength={9}
-                autoComplete="off"
-                spellCheck="false"
-                autoCapitalize="characters"
-              />
-              {studentInfoErrors.buId && (
-                <p className="error-message" style={{ color: theme.error }}>
-                  {studentInfoErrors.buId}
-                </p>
-              )}
-            </div>
+              {/* Last Name */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <User size={20} />
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.lastName}
+                  onChange={handleLocalInputChange('lastName')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
+                  }}
+                  placeholder="Enter your last name"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.lastName ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.lastName && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.lastName}
+                  </p>
+                )}
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="email" className="form-label" style={{ color: theme.onSurface }}>
-                <Mail size={20} />
-                BU Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                inputMode="email"
-                value={localInfo.email}
-                onChange={handleLocalInputChange('email')}
-                className="form-input"
-                style={{ 
-                  backgroundColor: theme.elevation1,
-                  color: theme.onSurface,
-                  borderColor: studentInfoErrors.email ? theme.error : theme.outline
-                }}
-                placeholder="yourname@bu.edu"
-                autoComplete="email"
-                spellCheck="false"
-                autoCapitalize="off"
-              />
-              {studentInfoErrors.email && (
-                <p className="error-message" style={{ color: theme.error }}>
-                  {studentInfoErrors.email}
-                </p>
-              )}
-            </div>
+              {/* BU ID */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <CreditCard size={20} />
+                  BU ID
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.buId}
+                  onChange={handleLocalBuIdChange}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.buId ? theme.error : theme.outline
+                  }}
+                  placeholder="U12345678"
+                  maxLength={9}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.buId ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.buId && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.buId}
+                  </p>
+                )}
+              </div>
 
-            <button
-              onClick={handleSubmit}
-              className="submit-btn"
-              style={{ 
-                backgroundColor: theme.primary,
-                color: theme.onPrimary,
-                boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
-              }}
-            >
-              Start Assessment
-              <ArrowRight size={20} />
-            </button>
+              {/* Email */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <Mail size={20} />
+                  BU Email
+                </label>
+                <input
+                  type="email"
+                  value={localInfo.email}
+                  onChange={handleLocalInputChange('email')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.email ? theme.error : theme.outline
+                  }}
+                  placeholder="yourname@bu.edu"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.email ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.email && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.email}
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                style={{ 
+                  width: '100%', padding: '16px 24px', borderRadius: '9999px', fontWeight: '600', fontSize: '18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', marginTop: '32px',
+                  backgroundColor: theme.primary, color: theme.onPrimary,
+                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
+                }}
+              >
+                Start Assessment
+                <ArrowRight size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .info-blob-1 {
-          position: absolute;
-          width: 400px;
-          height: 400px;
-          top: 10%;
-          left: -200px;
-          border-radius: 50%;
-          filter: blur(80px);
-          animation: float 20s ease-in-out infinite;
-        }
-        
-        .info-blob-2 {
-          position: absolute;
-          width: 400px;
-          height: 400px;
-          bottom: 10%;
-          right: -200px;
-          border-radius: 50%;
-          filter: blur(80px);
-          animation: float 25s ease-in-out infinite reverse;
-        }
-        
-        .form-card {
-          border-radius: 24px;
-          padding: 40px;
-          transition: all 0.3s ease;
-        }
-        
-        .form-group {
-          margin-bottom: 24px;
-        }
-        
-        .form-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          font-size: 16px;
-        }
-        
-        .form-input {
-          width: 100%;
-          padding: 12px 16px;
-          border-radius: 12px;
-          border: 2px solid;
-          font-size: 16px;
-          transition: all 0.3s ease;
-          outline: none;
-          box-sizing: border-box;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-          display: block;
-          touch-action: manipulation;
-          position: relative;
-          z-index: 1;
-          background-clip: padding-box;
-        }
-        
-        .form-input:focus {
-          border-color: ${theme.primary} !important;
-          box-shadow: 0 0 0 3px ${theme.primary}20;
-        }
-        
-        .form-input::-webkit-inner-spin-button,
-        .form-input::-webkit-outer-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        
-        .form-input::-webkit-search-decoration,
-        .form-input::-webkit-search-cancel-button,
-        .form-input::-webkit-search-results-button,
-        .form-input::-webkit-search-results-decoration {
-          display: none;
-        }
-        
-        .form-input:-webkit-autofill,
-        .form-input:-webkit-autofill:hover,
-        .form-input:-webkit-autofill:focus {
-          -webkit-box-shadow: 0 0 0px 1000px ${theme.elevation1} inset !important;
-          -webkit-text-fill-color: ${theme.onSurface} !important;
-          caret-color: ${theme.onSurface} !important;
-        }
-        
-        .error-message {
-          margin-top: 6px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        
-        .submit-btn {
-          width: 100%;
-          padding: 16px 24px;
-          border-radius: 9999px;
-          font-weight: 600;
-          font-size: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border: none;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 32px;
-        }
-        
-        .submit-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 100, 149, 0.4) !important;
-        }
-        
-        /* Common styles */
-        .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
-        .max-w-2xl { max-width: 42rem; }
-        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-        .font-bold { font-weight: 700; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-      `}</style>
-    </div>
     );
   };
 
   // About Page Component
   const AboutPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
-      <div className="relative">
-        {/* Navigation */}
-        <nav className="px-6 py-4">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
+        <nav style={{ padding: '24px' }}>
+          <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <button
               onClick={() => setCurrentPage('landing')}
-              className="home-button"
               style={{ 
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                borderRadius: '12px',
-                backgroundColor: theme.primaryContainer,
-                color: theme.onPrimaryContainer,
-                fontSize: '16px',
-                fontWeight: '600',
-                transition: 'all 0.3s ease',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = theme.primaryContainer;
-                e.currentTarget.style.transform = 'scale(1.02)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = theme.elevation1;
-                e.currentTarget.style.transform = 'scale(1)';
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '12px 24px', borderRadius: '12px',
+                backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                fontSize: '16px', fontWeight: '600', transition: 'all 0.3s ease',
+                border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
               }}
             >
               <Home size={20} />
@@ -1672,276 +1343,248 @@ const RoleMatch = () => {
           </div>
         </nav>
 
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <h1 className="text-4xl font-bold mb-8" style={{ color: theme.onBackground }}>About RoleMatch</h1>
+        <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '48px 24px' }}>
+          <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '32px', color: theme.onBackground }}>About RoleMatch</h1>
           
-          <div className="space-y-8">
-            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Mission</h2>
-              <p className="text-lg leading-relaxed" style={{ color: theme.onSurfaceVariant }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <section style={{ backgroundColor: theme.elevation1, padding: '24px', borderRadius: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '16px', color: theme.primary }}>Our Mission</h2>
+              <p style={{ fontSize: '1.125rem', lineHeight: '1.625', color: theme.onSurfaceVariant }}>
                 RoleMatch is a smart role recommendation system created for CS673 Software Engineering course. 
-                It's designed to revolutionize team formation by matching individuals to their optimal project roles. 
-                We believe that when people work in roles that align with their skills, interests, and working style, 
-                teams become more productive, creative, and successful.
+                It's designed to revolutionize team formation by matching individuals to their optimal project roles.
               </p>
             </section>
 
-            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>How It Works</h2>
-              <div className="space-y-4">
-                <div className="step-item">
-                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
-                    <span style={{ color: theme.onPrimaryContainer }}>1</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Take the Assessment</h3>
-                    <p style={{ color: theme.onSurfaceVariant }}>Answer 12 carefully crafted questions about your skills, preferences, and experience.</p>
-                  </div>
-                </div>
-                
-                <div className="step-item">
-                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
-                    <span style={{ color: theme.onPrimaryContainer }}>2</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Smart Analysis</h3>
-                    <p style={{ color: theme.onSurfaceVariant }}>Our algorithm analyzes your responses using weighted scoring to find your ideal matches.</p>
-                  </div>
-                </div>
-                
-                <div className="step-item">
-                  <div className="step-number" style={{ backgroundColor: theme.primaryContainer }}>
-                    <span style={{ color: theme.onPrimaryContainer }}>3</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>Get Your Results</h3>
-                    <p style={{ color: theme.onSurfaceVariant }}>Receive your top 3 role recommendations with detailed explanations and match percentages.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>The Roles</h2>
-              <div className="space-y-4">
-                {Object.entries(roles).map(([key, role]) => (
-                  <div key={key} className="role-item">
-                    <div style={{ color: theme.primary }}>{role.icon}</div>
-                    <div>
-                      <h3 className="font-semibold mb-1" style={{ color: theme.onSurface }}>{role.name}</h3>
-                      <p style={{ color: theme.onSurfaceVariant }}>{role.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="section-card" style={{ backgroundColor: theme.elevation1 }}>
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: theme.primary }}>Our Team</h2>
-              <ul className="team-list" style={{ color: theme.onSurfaceVariant }}>
-                <li>• <strong>Gagan Veginati</strong> - Software Designer and Developer, Front-end Lead</li>
-                <li>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
-                <li>• <strong>Yuqing Zheng</strong> - UX Developer, Back-end Lead</li>
-                <li>• <strong>Brady Wu</strong> - Software Tester, Test Lead</li>
-                <li>• <strong>Paul Mulroney</strong> - Project Manager, Requirements Lead</li>
+            <section style={{ backgroundColor: theme.elevation1, padding: '24px', borderRadius: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '16px', color: theme.primary }}>Our Team</h2>
+              <ul style={{ listStyle: 'none', padding: 0, color: theme.onSurfaceVariant }}>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Gagan Veginati</strong> - Software Designer and Developer</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Yuqing Zheng</strong> - UX Developer</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Brady Wu</strong> - Software Tester</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Paul Mulroney</strong> - Project Manager</li>
               </ul>
             </section>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .section-card {
-          padding: 24px;
-          border-radius: 24px;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-        }
-        
-        .step-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-        }
-        
-        .step-number {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          font-weight: 600;
-        }
-        
-        .role-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-        }
-        
-        .team-list {
-          list-style: none;
-          padding: 0;
-        }
-        
-        .team-list li {
-          margin-bottom: 8px;
-          line-height: 1.6;
-        }
-        
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-y-8 > * + * { margin-top: 2rem; }
-        .font-semibold { font-weight: 600; }
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .leading-relaxed { line-height: 1.625; }
-      `}</style>
     </div>
   );
 
-  // Quiz Page Component
+  // Quiz Page Component - COMPLETELY REWRITTEN TO FIX DUPLICATION
   const QuizPage = () => {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const currentQ = questions[currentQuestion];
 
     return (
-      <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
-        <div className="relative">
-          {/* Animated background */}
-          <div className="absolute inset-0 overflow-hidden opacity-30">
-            <div className="quiz-blob-1" style={{ backgroundColor: theme.primary }}></div>
-            <div className="quiz-blob-2" style={{ backgroundColor: theme.secondary }}></div>
+      <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+        <div style={{ position: 'relative' }}>
+          {/* Background */}
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              top: '25%', left: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.primary, filter: 'blur(80px)',
+              animation: 'float 20s ease-in-out infinite'
+            }}></div>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              bottom: '25%', right: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.secondary, filter: 'blur(80px)',
+              animation: 'float 25s ease-in-out infinite reverse'
+            }}></div>
           </div>
 
-          <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+          <div style={{ position: 'relative', zIndex: 10, maxWidth: '56rem', margin: '0 auto', padding: '32px 16px' }}>
             {/* Header with Home Button */}
-            <nav className="mb-8">
-              <div className="flex justify-between items-center">
+            <nav style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button
                   onClick={() => setCurrentPage('landing')}
-                  className="home-btn"
                   style={{ 
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 24px',
-                    borderRadius: '12px',
-                    backgroundColor: theme.primaryContainer,
-                    color: theme.onPrimaryContainer,
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    border: 'none',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '12px 24px', borderRadius: '12px',
+                    backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                    fontSize: '16px', fontWeight: '600', transition: 'all 0.3s ease',
+                    border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.02)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                 >
                   <Home size={20} />
                   RoleMatch
                 </button>
+                <div style={{ fontSize: '14px', fontWeight: '500', color: theme.onSurfaceVariant }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </div>
               </div>
             </nav>
             
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2" style={{ color: theme.onBackground }}>
+            {/* Student Info Display */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '8px', color: theme.onBackground }}>
                 RoleMatch Assessment
               </h1>
-              <p className="text-lg" style={{ color: theme.onSurfaceVariant }}>
+              <p style={{ fontSize: '1.125rem', color: theme.onSurfaceVariant }}>
                 {studentInfo.firstName} {studentInfo.lastName} ({studentInfo.buId})
               </p>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium" style={{ color: theme.onSurfaceVariant }}>
-                  Question {currentQuestion + 1} of {questions.length}
-                </span>
-              </div>
-              <div className="progress-bar" style={{ backgroundColor: theme.surfaceVariant }}>
-                <div
-                  className="progress-fill"
-                  style={{ 
-                    width: `${progress}%`,
-                    background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`
-                  }}
-                />
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ 
+                height: '8px', borderRadius: '9999px', overflow: 'hidden',
+                backgroundColor: theme.surfaceVariant
+              }}>
+                <div style={{ 
+                  height: '100%', width: `${progress}%`,
+                  background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
+                  transition: 'width 0.5s ease-out'
+                }} />
               </div>
             </div>
 
             {/* Question Card */}
-            <div
-              className={`question-card ${isAnimating ? 'animating' : ''}`}
-              style={{ 
-                backgroundColor: theme.surface,
-                boxShadow: darkMode 
-                  ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-                  : '0 10px 40px rgba(0, 0, 0, 0.08)'
-              }}
-            >
-              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.onSurface }}>
-                {questions[currentQuestion].text}
+            <div style={{
+              backgroundColor: theme.surface,
+              boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+              borderRadius: '24px',
+              padding: '40px',
+              marginBottom: '24px',
+              transform: isAnimating ? 'scale(0.95)' : 'scale(1)',
+              opacity: isAnimating ? 0.5 : 1,
+              transition: 'all 0.3s ease'
+            }}>
+              {/* Question Text */}
+              <h2 style={{ 
+                fontSize: '1.75rem', fontWeight: '700', marginBottom: '32px', 
+                textAlign: 'center', color: theme.onSurface, lineHeight: '1.4'
+              }}>
+                {currentQ.text}
               </h2>
 
               {/* Warning Message */}
               {showWarning && (
-                <div className="warning-message" style={{ backgroundColor: theme.error + '20' }}>
+                <div style={{ 
+                  backgroundColor: theme.error + '20',
+                  marginBottom: '24px', padding: '16px', borderRadius: '16px',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  animation: 'shake 0.5s ease-in-out'
+                }}>
                   <Info size={20} style={{ color: theme.error }} />
-                  <span style={{ color: theme.error }}>
-                    {questions[currentQuestion].type === 'multiple' 
+                  <span style={{ color: theme.error, fontWeight: '500' }}>
+                    {currentQ.type === 'multiple' 
                       ? 'Please select at least one option' 
                       : 'Please select an option'}
                   </span>
                 </div>
               )}
 
-              <div className="options-container">
-                {questions[currentQuestion].options.map((option, index) => {
-                  const question = questions[currentQuestion];
-                  const isSelected = question.type === 'single' 
-                    ? answers[question.id] === index
-                    : (answers[question.id] || []).includes(index);
+              {/* Options Container */}
+              <div style={{ 
+                display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px'
+              }}>
+                {currentQ.options.map((option, index) => {
+                  const isSelected = currentQ.type === 'single' 
+                    ? answers[currentQ.id] === index
+                    : (answers[currentQ.id] || []).includes(index);
 
                   return (
-                    <div key={index} className="option-wrapper">
+                    <div key={index} style={{ position: 'relative' }}>
                       <button
                         onClick={() => {
-                          if (question.type === 'single') {
+                          if (currentQ.type === 'single') {
                             handleAnswer(index, option);
                           } else {
                             handleMultipleAnswer(index, option);
                           }
                         }}
-                        className={`option-button ${isSelected ? 'selected' : ''}`}
                         style={{ 
                           backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
                           color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
                           borderColor: isSelected ? theme.primary : 'transparent',
-                          boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
+                          boxShadow: isSelected ? '0 8px 32px rgba(0, 100, 149, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.05)',
+                          width: '100%', textAlign: 'left', padding: '20px 24px',
+                          borderRadius: '16px', transition: 'all 0.3s ease',
+                          border: '2px solid', cursor: 'pointer',
+                          fontSize: '16px', fontWeight: '500',
+                          transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) e.target.style.transform = 'scale(1.01)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = isSelected ? 'scale(1.02)' : 'scale(1)';
                         }}
                       >
-                        <div className="option-content">
-                          {question.type === 'multiple' && (
-                            <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
-                                 style={{ 
-                                   backgroundColor: isSelected ? theme.primary : 'transparent',
-                                   borderColor: isSelected ? theme.primary : theme.outline
-                                 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          {currentQ.type === 'multiple' && (
+                            <div style={{ 
+                              width: '24px', height: '24px', borderRadius: '8px',
+                              border: '2px solid', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              backgroundColor: isSelected ? theme.primary : 'transparent',
+                              borderColor: isSelected ? theme.primary : theme.outline,
+                              flexShrink: 0
+                            }}>
                               {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
                             </div>
                           )}
-                          <span className="option-text">{option.text}</span>
+                          <span style={{ flex: 1, lineHeight: '1.5' }}>
+                            {option.text}
+                          </span>
                         </div>
                       </button>
+                      
+                      {/* Enhanced Character Animation */}
                       {selectedOption === option.roleKey && (
-                        <div className="role-popup">
-                          <RoleCharacter roleKey={option.roleKey} isAnimated={true} size="small" />
+                        <div style={{
+                          position: 'absolute', right: '-120px', top: '50%',
+                          transform: 'translateY(-50%)', zIndex: 10,
+                          animation: 'character-entrance 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}>
+                          <RoleCharacter 
+                            roleKey={option.roleKey} 
+                            isAnimated={true} 
+                            isHovered={true}
+                            size="large" 
+                            showSparkles={true}
+                          />
+                          
+                          {/* Character speech bubble */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '-60px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: theme.surface,
+                            padding: '8px 12px',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                            border: `2px solid ${roles[option.roleKey].color}`,
+                            animation: 'speech-bubble 0.5s ease-out 0.3s both',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            <p style={{ 
+                              color: theme.onSurface, 
+                              fontSize: '12px', 
+                              fontWeight: '600',
+                              margin: 0
+                            }}>
+                              Great choice! 🎉
+                            </p>
+                            {/* Speech bubble arrow */}
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '-8px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: 0,
+                              height: 0,
+                              borderLeft: '8px solid transparent',
+                              borderRight: '8px solid transparent',
+                              borderTop: `8px solid ${roles[option.roleKey].color}`
+                            }} />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1950,161 +1593,58 @@ const RoleMatch = () => {
               </div>
 
               {/* Navigation */}
-              <div className="navigation">
+              <div style={{ 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
                 <button
                   onClick={prevQuestion}
                   disabled={currentQuestion === 0}
-                  className={`nav-btn prev-btn ${currentQuestion === 0 ? 'disabled' : ''}`}
                   style={{ 
                     backgroundColor: currentQuestion === 0 ? theme.surfaceVariant : theme.elevation2,
-                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface
+                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface,
+                    padding: '16px 24px', borderRadius: '9999px', fontWeight: '600',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    border: 'none', cursor: currentQuestion === 0 ? 'not-allowed' : 'pointer',
+                    opacity: currentQuestion === 0 ? 0.5 : 1,
+                    transition: 'all 0.3s ease', fontSize: '16px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentQuestion > 0) e.target.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
                   }}
                 >
                   <ChevronLeft size={20} />
                   Previous
                 </button>
 
-                {questions[currentQuestion].type === 'multiple' && (
-                  <span className="select-hint" style={{ color: theme.onSurfaceVariant }}>
+                {currentQ.type === 'multiple' && (
+                  <span style={{ 
+                    color: theme.onSurfaceVariant, fontSize: '14px', 
+                    fontWeight: '500', fontStyle: 'italic'
+                  }}>
                     Select all that apply
                   </span>
                 )}
 
                 <button
                   onClick={nextQuestion}
-                  className="nav-btn next-btn"
                   style={{ 
-                    backgroundColor: theme.primary,
-                    color: theme.onPrimary,
-                    boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                    backgroundColor: theme.primary, color: theme.onPrimary,
+                    boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                    padding: '16px 24px', borderRadius: '9999px', fontWeight: '600',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    border: 'none', cursor: 'pointer', transition: 'all 0.3s ease',
+                    fontSize: '16px'
                   }}
-                >
-                  {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium" style={{ color: theme.onSurfaceVariant }}>
-                  Question {currentQuestion + 1} of {questions.length}
-                </span>
-              </div>
-              <div className="progress-bar" style={{ backgroundColor: theme.surfaceVariant }}>
-                <div
-                  className="progress-fill"
-                  style={{ 
-                    width: `${progress}%`,
-                    background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
                   }}
-                />
-              </div>
-            </div>
-
-            {/* Question Card */}
-            <div
-              className={`question-card ${isAnimating ? 'animating' : ''}`}
-              style={{ 
-                backgroundColor: theme.surface,
-                boxShadow: darkMode 
-                  ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-                  : '0 10px 40px rgba(0, 0, 0, 0.08)'
-              }}
-            >
-              <h2 className="text-2xl font-bold mb-6" style={{ color: theme.onSurface }}>
-                {questions[currentQuestion].text}
-              </h2>
-
-              {/* Warning Message */}
-              {showWarning && (
-                <div className="warning-message" style={{ backgroundColor: theme.error + '20' }}>
-                  <Info size={20} style={{ color: theme.error }} />
-                  <span style={{ color: theme.error }}>
-                    {questions[currentQuestion].type === 'multiple' 
-                      ? 'Please select at least one option' 
-                      : 'Please select an option'}
-                  </span>
-                </div>
-              )}
-
-              <div className="options-container">
-                {questions[currentQuestion].options.map((option, index) => {
-                  const question = questions[currentQuestion];
-                  const isSelected = question.type === 'single' 
-                    ? answers[question.id] === index
-                    : (answers[question.id] || []).includes(index);
-
-                  return (
-                    <div key={index} className="option-wrapper">
-                      <button
-                        onClick={() => {
-                          if (question.type === 'single') {
-                            handleAnswer(index, option);
-                          } else {
-                            handleMultipleAnswer(index, option);
-                          }
-                        }}
-                        className={`option-button ${isSelected ? 'selected' : ''}`}
-                        style={{ 
-                          backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
-                          color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
-                          borderColor: isSelected ? theme.primary : 'transparent',
-                          boxShadow: isSelected ? '0 4px 16px rgba(0, 100, 149, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
-                        }}
-                      >
-                        <div className="option-content">
-                          {question.type === 'multiple' && (
-                            <div className={`checkbox ${isSelected ? 'checked' : ''}`} 
-                                 style={{ 
-                                   backgroundColor: isSelected ? theme.primary : 'transparent',
-                                   borderColor: isSelected ? theme.primary : theme.outline
-                                 }}>
-                              {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
-                            </div>
-                          )}
-                          <span className="option-text">{option.text}</span>
-                        </div>
-                      </button>
-                      {selectedOption === option.roleKey && (
-                        <div className="role-popup">
-                          <RoleCharacter roleKey={option.roleKey} isAnimated={true} size="small" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Navigation */}
-              <div className="navigation">
-                <button
-                  onClick={prevQuestion}
-                  disabled={currentQuestion === 0}
-                  className={`nav-btn prev-btn ${currentQuestion === 0 ? 'disabled' : ''}`}
-                  style={{ 
-                    backgroundColor: currentQuestion === 0 ? theme.surfaceVariant : theme.elevation2,
-                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface
-                  }}
-                >
-                  <ChevronLeft size={20} />
-                  Previous
-                </button>
-
-                {questions[currentQuestion].type === 'multiple' && (
-                  <span className="select-hint" style={{ color: theme.onSurfaceVariant }}>
-                    Select all that apply
-                  </span>
-                )}
-
-                <button
-                  onClick={nextQuestion}
-                  className="nav-btn next-btn"
-                  style={{ 
-                    backgroundColor: theme.primary,
-                    color: theme.onPrimary,
-                    boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
                   }}
                 >
                   {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
@@ -2116,196 +1656,71 @@ const RoleMatch = () => {
         </div>
 
         <style jsx>{`
-          .home-btn {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          }
-          
-          .home-btn:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-          
-          .quiz-blob-1 {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            top: 25%;
-            left: -200px;
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: float 20s ease-in-out infinite;
-          }
-          
-          .quiz-blob-2 {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            bottom: 25%;
-            right: -200px;
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: float 25s ease-in-out infinite reverse;
-          }
-          
-          .progress-bar {
-            height: 8px;
-            border-radius: 9999px;
-            overflow: hidden;
-          }
-          
-          .progress-fill {
-            height: 100%;
-            transition: width 0.5s ease-out;
-          }
-          
-          .question-card {
-            border-radius: 24px;
-            padding: 32px;
-            transition: all 0.3s ease;
-            position: relative;
-          }
-          
-          .question-card.animating {
-            transform: scale(0.95);
-            opacity: 0.5;
-          }
-          
-          .warning-message {
-            margin-bottom: 16px;
-            padding: 12px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            animation: shake 0.5s ease-in-out;
+          @keyframes slideInBounce {
+            0% {
+              opacity: 0;
+              transform: translateX(30px) translateY(-50%) scale(0.8);
+            }
+            60% {
+              opacity: 1;
+              transform: translateX(-5px) translateY(-50%) scale(1.1);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0) translateY(-50%) scale(1);
+            }
           }
           
           @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-            20%, 40%, 60%, 80% { transform: translateX(2px); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
           }
           
-          .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 32px;
+          .character-sparkle {
+            animation: character-bounce 0.8s ease-in-out infinite;
           }
           
-          .option-wrapper {
-            position: relative;
-          }
-          
-          .option-button {
-            width: 100%;
-            text-align: left;
-            padding: 16px 20px;
-            border-radius: 16px;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-            cursor: pointer;
-          }
-          
-          .option-button:hover {
-            transform: scale(1.01);
-          }
-          
-          .option-button.selected {
-            transform: scale(1.02);
-          }
-          
-          .option-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-          }
-          
-          .checkbox {
-            width: 20px;
-            height: 20px;
-            border-radius: 6px;
-            border: 2px solid;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-          }
-          
-          .option-text {
-            flex: 1;
-            font-weight: 500;
-            font-size: 16px;
-          }
-          
-          .role-popup {
+          .sparkles-container {
             position: absolute;
-            right: -80px;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: slideInRight 0.3s ease-out;
+            inset: 0;
+            pointer-events: none;
           }
           
-          @keyframes slideInRight {
-            from {
-              opacity: 0;
-              transform: translateX(20px) translateY(-50%);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0) translateY(-50%);
-            }
-          }
-          
-          .navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 32px;
-          }
-          
-          .nav-btn {
-            padding: 12px 24px;
-            border-radius: 9999px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: none;
-            cursor: pointer;
+          .sparkle {
+            position: absolute;
             font-size: 16px;
+            animation: sparkle-float 2s ease-in-out infinite;
           }
           
-          .nav-btn:hover:not(.disabled) {
-            transform: scale(1.05);
+          .sparkle-1 {
+            top: -10px;
+            right: -10px;
+            animation-delay: 0s;
           }
           
-          .nav-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+          .sparkle-2 {
+            bottom: -10px;
+            left: -10px;
+            animation-delay: 0.7s;
           }
           
-          .select-hint {
-            font-size: 14px;
-            font-weight: 500;
+          .sparkle-3 {
+            top: 50%;
+            left: -15px;
+            animation-delay: 1.4s;
           }
           
-          /* Common styles */
-          .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
-          .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-          .text-2xl { font-size: 1.5rem; line-height: 2rem; }
-          .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-          .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-          .font-bold { font-weight: 700; }
-          .font-medium { font-weight: 500; }
-          .mb-2 { margin-bottom: 0.5rem; }
-          .mb-6 { margin-bottom: 1.5rem; }
-          .mb-8 { margin-bottom: 2rem; }
-          .px-4 { padding-left: 1rem; padding-right: 1rem; }
-          .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-          .flex-1 { flex: 1; }
+          @keyframes sparkle-float {
+            0%, 100% {
+              opacity: 0;
+              transform: translateY(0) rotate(0deg) scale(0.5);
+            }
+            50% {
+              opacity: 1;
+              transform: translateY(-10px) rotate(180deg) scale(1);
+            }
+          }
         `}</style>
       </div>
     );
@@ -2313,138 +1728,139 @@ const RoleMatch = () => {
 
   // Results Page Component
   const ResultsPage = () => (
-    <div className="min-h-screen" style={{ backgroundColor: theme.background, overflow: 'auto' }}>
-      <div className="relative">
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.2 }}>
           {results.recommendations.map((rec, index) => (
-            <div key={rec.role}
-                 className="result-blob"
-                 style={{ 
-                   background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
-                   top: `${index * 30}%`,
-                   left: index % 2 === 0 ? '-10%' : '60%',
-                   animationDelay: `${index * 0.5}s`
-                 }}></div>
+            <div key={rec.role} style={{ 
+              background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
+              position: 'absolute', width: '400px', height: '400px', borderRadius: '50%',
+              filter: 'blur(100px)', top: `${index * 30}%`,
+              left: index % 2 === 0 ? '-10%' : '60%',
+              animation: `float 20s ease-in-out infinite`,
+              animationDelay: `${index * 0.5}s`
+            }} />
           ))}
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="results-header">
-            <h1 className="text-4xl font-bold" style={{ color: theme.onBackground }}>
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: '72rem', margin: '0 auto', padding: '32px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: '700', color: theme.onBackground }}>
               Your Results
             </h1>
-            <div className="header-actions">
-              <button
-                onClick={restart}
-                className="retake-btn"
-                style={{ 
-                  backgroundColor: theme.primary,
-                  color: theme.onPrimary,
-                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
-                }}
-              >
-                <RefreshCw size={20} />
-                Retake Quiz
-              </button>
-            </div>
+            <button
+              onClick={restart}
+              style={{ 
+                backgroundColor: theme.primary, color: theme.onPrimary,
+                boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)',
+                padding: '12px 24px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              <RefreshCw size={20} />
+              Retake Quiz
+            </button>
           </div>
 
-          {/* Student Info Summary */}
-          <div className="student-summary" style={{ 
-            backgroundColor: theme.elevation1,
-            color: theme.onSurfaceVariant,
-            padding: '12px 24px',
-            borderRadius: '12px',
-            marginBottom: '24px',
-            fontSize: '14px'
+          <div style={{ 
+            backgroundColor: theme.elevation1, color: theme.onSurfaceVariant,
+            padding: '12px 24px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px'
           }}>
             <strong>{studentInfo.firstName} {studentInfo.lastName}</strong> • {studentInfo.buId} • {studentInfo.email}
           </div>
 
-          {/* Results Cards with Character Animations */}
-          <div className="results-grid">
+          <div style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
             {results.recommendations.map((rec, index) => (
-              <div
-                key={rec.role}
-                className="result-card"
-                style={{
-                  backgroundColor: theme.surface,
-                  boxShadow: darkMode 
-                    ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-                    : '0 10px 40px rgba(0, 0, 0, 0.08)',
-                  animationDelay: `${index * 0.1}s`
-                }}
-              >
-                <div className="card-content">
-                  <div className="card-main">
-                    <div className="card-header">
-                      <RoleCharacter roleKey={rec.role} isAnimated={false} size="large" />
+              <div key={rec.role} style={{
+                backgroundColor: theme.surface,
+                boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+                borderRadius: '24px', padding: '32px',
+                animation: `slideInUp 0.6s ease-out ${index * 0.15}s both`
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '24px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                      <div style={{ position: 'relative' }}>
+                        <RoleCharacter 
+                          roleKey={rec.role} 
+                          isAnimated={true} 
+                          isHovered={true}
+                          size="large" 
+                        />
+                        {/* Rank badge */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '-8px',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          backgroundColor: theme.primary,
+                          color: theme.onPrimary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                          zIndex: 2
+                        }}>
+                          {rec.rank}
+                        </div>
+                      </div>
                       <div>
-                        <h3 className="role-name" style={{ color: theme.onSurface }}>
+                        <h3 style={{ 
+                          color: theme.onSurface, fontSize: '28px', fontWeight: '700', 
+                          marginBottom: '4px'
+                        }}>
                           {rec.roleInfo.name}
                         </h3>
-                        <p className="match-percentage" style={{ color: theme.primary }}>
+                        <p style={{ color: theme.primary, fontWeight: '600', fontSize: '18px' }}>
                           {rec.score}% Match
                         </p>
                       </div>
                     </div>
                     
-                    <p className="explanation" style={{ color: theme.onSurfaceVariant }}>
+                    <p style={{ 
+                      color: theme.onSurfaceVariant, marginBottom: '16px', 
+                      fontSize: '18px', lineHeight: '1.6'
+                    }}>
                       {rec.explanation}
                     </p>
                     
-                    <p className="description" style={{ color: theme.onSurfaceVariant }}>
-                      {rec.roleInfo.description}
-                    </p>
-                    
-                    <div className="skills-container">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {rec.roleInfo.skills.map(skill => (
-                        <span
-                          key={skill}
-                          className="skill-tag"
-                          style={{
-                            backgroundColor: theme.secondaryContainer,
-                            color: theme.onSecondaryContainer
-                          }}
-                        >
+                        <span key={skill} style={{
+                          backgroundColor: theme.secondaryContainer,
+                          color: theme.onSecondaryContainer,
+                          padding: '8px 16px', borderRadius: '9999px',
+                          fontSize: '14px', fontWeight: '500'
+                        }}>
                           {skill}
                         </span>
                       ))}
                     </div>
                   </div>
                   
-                  <div className="score-visual">
-                    <svg className="score-circle" viewBox="0 0 96 96">
+                  <div style={{ position: 'relative', width: '120px', height: '120px', flexShrink: 0 }}>
+                    <svg viewBox="0 0 120 120" style={{ width: '120px', height: '120px', transform: 'rotate(-90deg)' }}>
+                      <circle cx="60" cy="60" r="45" stroke={theme.surfaceVariant} strokeWidth="10" fill="none" />
                       <circle
-                        cx="48"
-                        cy="48"
-                        r="36"
-                        stroke={theme.surfaceVariant}
-                        strokeWidth="8"
-                        fill="none"
+                        cx="60" cy="60" r="45" stroke={rec.roleInfo.color} strokeWidth="10" fill="none"
+                        strokeDasharray={`${2 * Math.PI * 45}`}
+                        strokeDashoffset={`${2 * Math.PI * 45 * (1 - rec.score / 100)}`}
+                        style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
                       />
-                      <circle
-                        cx="48"
-                        cy="48"
-                        r="36"
-                        stroke={`url(#gradient-${rec.role})`}
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 36}`}
-                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - rec.score / 100)}`}
-                        className="score-progress"
-                      />
-                      <defs>
-                        <linearGradient id={`gradient-${rec.role}`}>
-                          <stop offset="0%" stopColor={rec.roleInfo.gradient.from} />
-                          <stop offset="100%" stopColor={rec.roleInfo.gradient.to} />
-                        </linearGradient>
-                      </defs>
                     </svg>
-                    <div className="score-text">
-                      <span style={{ color: theme.onSurface }}>{rec.score}%</span>
+                    <div style={{ 
+                      position: 'absolute', inset: 0, display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center',
+                      fontSize: '24px', fontWeight: '700', color: theme.onSurface
+                    }}>
+                      {rec.score}%
                     </div>
                   </div>
                 </div>
@@ -2452,58 +1868,55 @@ const RoleMatch = () => {
             ))}
           </div>
 
-          {/* Export Options */}
-          <div className="export-card" style={{ 
+          <div style={{ 
             backgroundColor: theme.surface,
-            boxShadow: darkMode 
-              ? '0 10px 40px rgba(0, 0, 0, 0.5)' 
-              : '0 10px 40px rgba(0, 0, 0, 0.08)'
+            boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+            borderRadius: '24px', padding: '32px',
+            animation: 'slideInUp 0.6s ease-out 0.5s both'
           }}>
-            <h3 className="export-title" style={{ color: theme.onSurface }}>
+            <h3 style={{ 
+              color: theme.onSurface, fontSize: '24px', fontWeight: '700', 
+              marginBottom: '20px', textAlign: 'center'
+            }}>
               Save & Share Your Results
             </h3>
-            <div className="export-buttons">
-              <button
-                onClick={exportToCSV}
-                className="export-btn"
-                style={{ 
-                  backgroundColor: theme.secondaryContainer,
-                  color: theme.onSecondaryContainer
-                }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <button onClick={exportToCSV} style={{ 
+                backgroundColor: theme.secondaryContainer, color: theme.onSecondaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
                 <Download size={20} />
                 Download CSV
               </button>
-              <button
-                onClick={exportToPDF}
-                className="export-btn"
-                style={{ 
-                  backgroundColor: theme.tertiaryContainer,
-                  color: theme.onTertiaryContainer
-                }}
-              >
+              <button onClick={exportToPDF} style={{ 
+                backgroundColor: theme.tertiaryContainer, color: theme.onTertiaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
                 <Download size={20} />
                 Download PDF
               </button>
-              <button
-                onClick={shareResults}
-                className="export-btn"
-                style={{ 
-                  backgroundColor: theme.primaryContainer,
-                  color: theme.onPrimaryContainer
-                }}
-              >
+              <button onClick={shareResults} style={{ 
+                backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
                 <Share2 size={20} />
                 Share Results
               </button>
             </div>
           </div>
 
-          {/* Share Notification */}
           {shareNotification && (
-            <div className="share-notification" style={{ 
-              backgroundColor: theme.primary,
-              color: theme.onPrimary
+            <div style={{ 
+              backgroundColor: theme.primary, color: theme.onPrimary,
+              position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+              padding: '16px 24px', borderRadius: '12px', fontWeight: '600',
+              animation: 'slideUpIn 0.3s ease-out', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
             }}>
               {shareNotification}
             </div>
@@ -2512,229 +1925,26 @@ const RoleMatch = () => {
       </div>
 
       <style jsx>{`
-        .result-blob {
-          position: absolute;
-          width: 400px;
-          height: 400px;
-          border-radius: 50%;
-          filter: blur(100px);
-          animation: float 20s ease-in-out infinite;
-        }
-        
-        .results-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
-        }
-        
-        .header-actions {
-          display: flex;
-          gap: 16px;
-        }
-        
-        .retake-btn {
-          padding: 12px 24px;
-          border-radius: 9999px;
-          transition: all 0.3s ease;
-          border: none;
-          cursor: pointer;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .retake-btn:hover {
-          transform: scale(1.1);
-        }
-        
-        .results-grid {
-          display: grid;
-          gap: 24px;
-          margin-bottom: 32px;
-        }
-        
-        .result-card {
-          border-radius: 24px;
-          padding: 24px;
-          animation: slideInUp 0.5s ease-out both;
-        }
-        
         @keyframes slideInUp {
-          from {
-            transform: translateY(30px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        .card-content {
-          display: flex;
-          justify-content: space-between;
-          gap: 24px;
-        }
-        
-        .card-main {
-          flex: 1;
-        }
-        
-        .card-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 16px;
-        }
-        
-        .role-name {
-          font-size: 24px;
-          font-weight: 700;
-          margin-bottom: 4px;
-        }
-        
-        .match-percentage {
-          font-weight: 600;
-          font-size: 16px;
-        }
-        
-        .explanation {
-          margin-bottom: 16px;
-          font-size: 18px;
-          line-height: 1.6;
-        }
-        
-        .description {
-          margin-bottom: 16px;
-          font-style: italic;
-          line-height: 1.5;
-        }
-        
-        .skills-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        
-        .skill-tag {
-          padding: 6px 16px;
-          border-radius: 9999px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        
-        .score-visual {
-          position: relative;
-          width: 96px;
-          height: 96px;
-          flex-shrink: 0;
-        }
-        
-        .score-circle {
-          width: 96px;
-          height: 96px;
-          transform: rotate(-90deg);
-        }
-        
-        .score-progress {
-          transition: stroke-dashoffset 1s ease-out;
-        }
-        
-        .score-text {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-          font-weight: 700;
-        }
-        
-        .export-card {
-          border-radius: 24px;
-          padding: 24px;
-          animation: slideInUp 0.5s ease-out 0.3s both;
-        }
-        
-        .export-title {
-          font-size: 20px;
-          font-weight: 700;
-          margin-bottom: 16px;
-        }
-        
-        .export-buttons {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-        
-        .export-btn {
-          padding: 12px 24px;
-          border-radius: 9999px;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          border: none;
-          cursor: pointer;
-          font-size: 16px;
-        }
-        
-        .export-btn:hover {
-          transform: scale(1.05);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        }
-        
-        .share-notification {
-          position: fixed;
-          bottom: 32px;
-          left: 50%;
-          transform: translateX(-50%);
-          padding: 16px 24px;
-          border-radius: 12px;
-          font-weight: 600;
-          animation: slideUpIn 0.3s ease-out;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
         
         @keyframes slideUpIn {
-          from {
-            transform: translateX(-50%) translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-          }
+          from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+          to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-        
-        /* Common styles */
-        .container { width: 100%; margin: 0 auto; padding: 0 1rem; }
-        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-        .font-bold { font-weight: 700; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
       `}</style>
     </div>
   );
 
   // Main render logic
-  if (currentPage === 'landing') {
-    return <LandingPage />;
-  } else if (currentPage === 'about') {
-    return <AboutPage />;
-  } else if (currentPage === 'studentInfo') {
-    return <StudentInfoPage />;
-  } else if (currentPage === 'quiz') {
-    return <QuizPage />;
-  } else if (currentPage === 'results' && results) {
-    return <ResultsPage />;
-  }
-
-  // Default to landing page
+  if (currentPage === 'landing') return <LandingPage />;
+  if (currentPage === 'about') return <AboutPage />;
+  if (currentPage === 'studentInfo') return <StudentInfoPage />;
+  if (currentPage === 'quiz') return <QuizPage />;
+  if (currentPage === 'results' && results) return <ResultsPage />;
+  
   return <LandingPage />;
 };
 
