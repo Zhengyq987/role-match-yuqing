@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
   const [currentPage, setCurrentPage] = useState('landing'); // 'landing', 'about', 'studentInfo', 'quiz', 'results', 'professor'
@@ -48,51 +48,10 @@ const RoleMatch = () => {
   }));
   const [studentInfoErrors, setStudentInfoErrors] = useState({});
 
-  // Handle input changes - using event persist for safety
-  const handleInputChange = (field) => (e) => {
-    const { value } = e.target;
-    
-    // Only allow letters and spaces for names
-    if (field === 'firstName' || field === 'lastName') {
-      if (value === '' || /^[A-Za-z\s]*$/.test(value)) {
-        setStudentInfo(prev => ({
-          ...prev,
-          [field]: value
-        }));
-      }
-    } else {
-      setStudentInfo(prev => ({
-        ...prev,
-        [field]: value
-      }));
-    }
-  };
-
-  // Handle BU ID change with validation
-  const handleBuIdChange = (e) => {
-    e.persist && e.persist(); // For older React versions
-    const value = e.target.value.toUpperCase();
-    // Allow only U followed by up to 8 digits
-    if (value === '' || /^U\d{0,8}$/.test(value)) {
-      setStudentInfo(prev => ({
-        ...prev,
-        buId: value
-      }));
-    }
-  };
-
   // Debug: Log when component re-renders
   useEffect(() => {
     console.log('StudentInfo state:', studentInfo);
   }, [studentInfo]);
-
-  // Create refs for inputs to avoid re-render issues
-  const inputRefs = {
-    firstName: React.useRef(null),
-    lastName: React.useRef(null),
-    buId: React.useRef(null),
-    email: React.useRef(null)
-  };
 
   // Material 3 Color Scheme
   const colors = {
@@ -153,6 +112,7 @@ const RoleMatch = () => {
   const theme = darkMode ? colors.dark : colors.light;
 
   // Role definitions with Lottie animations
+  /* eslint-disable no-unused-vars */
   const roles = {
     RE: {
       name: "Requirements Engineer",
@@ -427,24 +387,6 @@ const RoleMatch = () => {
     
     setStudentInfoErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  // Handle student info updates
-  const updateStudentInfo = (field, value) => {
-    setStudentInfo(prevState => ({
-      ...prevState,
-      [field]: value
-    }));
-  };
-
-  // Handle student info submission
-  const handleStudentInfoSubmit = () => {
-    console.log('Validating student info:', studentInfo);
-    const isValid = validateStudentInfo();
-    console.log('Validation result:', isValid, 'Errors:', studentInfoErrors);
-    if (isValid) {
-      setCurrentPage('quiz');
-    }
   };
 
   // Calculate results
@@ -1338,6 +1280,7 @@ const RoleMatch = () => {
     // Local state management for better performance
     const [localInfo, setLocalInfo] = useState(studentInfo);
     
+    // eslint-disable-next-line no-unused-vars
     const handleLocalInputChange = (field) => (e) => {
       const { value } = e.target;
       setLocalInfo(prev => ({
@@ -1346,6 +1289,7 @@ const RoleMatch = () => {
       }));
     };
     
+    // eslint-disable-next-line no-unused-vars
     const handleLocalBuIdChange = (e) => {
       const value = e.target.value.toUpperCase();
       if (value === '' || /^U\d{0,8}$/.test(value)) {
