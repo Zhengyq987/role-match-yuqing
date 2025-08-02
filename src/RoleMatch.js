@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 import { Player } from '@lottiefiles/react-lottie-player';
 import uxAnimation from './animations/UX.json';
@@ -12,7 +12,6 @@ const RoleMatch = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
-  const lottieRefs = useRef({});
 
   // Use system dark mode preference
   const [darkMode, setDarkMode] = useState(() => {
@@ -811,36 +810,15 @@ const RoleMatch = () => {
                         position: 'relative',
                         overflow: 'visible'
                       }}
-                      // onMouseEnter={() => setHoveredRole(key)}
-                      // onMouseLeave={() => setHoveredRole(null)}
-                      onMouseEnter={() => {
-  setHoveredRole(key);
-  lottieRefs.current[key]?.play();
-}}
-
-onMouseLeave={() => {
-  setHoveredRole(null);
-  lottieRefs.current[key]?.stop();
-}}
-
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
                     >
-                      {/* <RoleCharacter 
+                      <RoleCharacter 
                         roleKey={key} 
                         isAnimated={hoveredRole === key} 
                         isHovered={hoveredRole === key}
                         size="medium" 
-                      /> */}
-                      <Player
-                        ref={ref => (lottieRefs.current[key] = ref)}
-                        src={roleAnimations[key]}
-                        loop
-                        style={{
-                          width: '96px',
-                          height: '96px',
-                        }}
-                        autoplay={false}
                       />
-
                       <h4 style={{ 
                         color: theme.onSurface, 
                         marginTop: '28px', 
@@ -929,37 +907,15 @@ onMouseLeave={() => {
                         position: 'relative',
                         overflow: 'visible'
                       }}
-                      // onMouseEnter={() => setHoveredRole(key)}
-                      // onMouseLeave={() => setHoveredRole(null)}
-                      onMouseEnter={() => {
-  setHoveredRole(key);
-  lottieRefs.current[key]?.play();
-}}
-
-onMouseLeave={() => {
-  setHoveredRole(null);
-  lottieRefs.current[key]?.stop();
-}}
-
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
                     >
-                      {/* <RoleCharacter 
+                      <RoleCharacter 
                         roleKey={key} 
                         isAnimated={hoveredRole === key} 
                         isHovered={hoveredRole === key}
                         size="medium" 
-                      /> */}
-                      <Player
-                        ref={ref => (lottieRefs.current[key] = ref)}
-                        src={roleAnimations[key]}
-                        loop
-                        style={{
-                          width: '96px',
-                          height: '96px',
-                        }}
-                        autoplay={false}
                       />
-
-
                       <h4 style={{ 
                         color: theme.onSurface, 
                         marginTop: '28px', 
