@@ -1,50 +1,154 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, Moon, Sun, CheckCircle2 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
 
 const RoleMatch = () => {
+  const [currentPage, setCurrentPage] = useState('landing');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
+  
+  // Use system dark mode preference
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+  
+  // Listen for system theme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e) => setDarkMode(e.matches);
+      
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.addListener(handleChange);
+        return () => mediaQuery.removeListener(handleChange);
+      }
+    }
+  }, []);
+  
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [shareNotification, setShareNotification] = useState('');
+  const [hoveredRole, setHoveredRole] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
+  
+  // Student information state
+  const [studentInfo, setStudentInfo] = useState(() => ({
+    firstName: '',
+    lastName: '',
+    buId: '',
+    email: ''
+  }));
+  const [studentInfoErrors, setStudentInfoErrors] = useState({});
 
-  // Role definitions (excluding Team Lead as per requirements)
+  // Material 3 Color Scheme
+  const colors = {
+    light: {
+      primary: '#006495',
+      onPrimary: '#ffffff',
+      primaryContainer: '#c9e6ff',
+      onPrimaryContainer: '#001e31',
+      secondary: '#525f6e',
+      onSecondary: '#ffffff',
+      secondaryContainer: '#d5e3f5',
+      onSecondaryContainer: '#0f1c29',
+      tertiary: '#6a5778',
+      onTertiary: '#ffffff',
+      tertiaryContainer: '#f2daff',
+      onTertiaryContainer: '#251432',
+      error: '#ba1a1a',
+      background: '#fdfcff',
+      onBackground: '#1a1c1e',
+      surface: '#fdfcff',
+      onSurface: '#1a1c1e',
+      surfaceVariant: '#dfe2eb',
+      onSurfaceVariant: '#43474e',
+      outline: '#73777f',
+      outlineVariant: '#c3c6cf',
+      elevation1: 'rgba(0, 0, 0, 0.05)',
+      elevation2: 'rgba(0, 0, 0, 0.08)',
+      elevation3: 'rgba(0, 0, 0, 0.11)',
+    },
+    dark: {
+      primary: '#8cccff',
+      onPrimary: '#003450',
+      primaryContainer: '#004b71',
+      onPrimaryContainer: '#c9e6ff',
+      secondary: '#b9c7d9',
+      onSecondary: '#24323f',
+      secondaryContainer: '#3a4856',
+      onSecondaryContainer: '#d5e3f5',
+      tertiary: '#d5bee5',
+      onTertiary: '#3a2948',
+      tertiaryContainer: '#52405f',
+      onTertiaryContainer: '#f2daff',
+      error: '#ffb4ab',
+      background: '#1a1c1e',
+      onBackground: '#e2e2e6',
+      surface: '#1a1c1e',
+      onSurface: '#e2e2e6',
+      surfaceVariant: '#43474e',
+      onSurfaceVariant: '#c3c6cf',
+      outline: '#8d9199',
+      outlineVariant: '#43474e',
+      elevation1: 'rgba(255, 255, 255, 0.05)',
+      elevation2: 'rgba(255, 255, 255, 0.08)',
+      elevation3: 'rgba(255, 255, 255, 0.11)',
+    }
+  };
+
+  const theme = darkMode ? colors.dark : colors.light;
+
+  // Role definitions
   const roles = {
     RE: {
       name: "Requirements Engineer",
       description: "Gathers and documents project requirements, writes specifications",
       skills: ["Documentation", "Analysis", "Communication", "Research"],
-      color: "from-blue-500 to-cyan-500"
+      icon: <Sparkles size={32} />,
+      gradient: { from: theme.primary, to: theme.secondary },
+      color: "#3B82F6"
     },
     CM: {
       name: "Configuration Manager",
       description: "Manages tools, files, versions, and project structure",
       skills: ["Organization", "Version Control", "Tool Management", "Documentation"],
-      color: "from-green-500 to-emerald-500"
+      icon: <Settings size={32} />,
+      gradient: { from: theme.secondary, to: theme.tertiary },
+      color: "#10B981"
     },
     Design: {
       name: "System Designer",
       description: "Plans system architecture and component interactions",
       skills: ["Architecture", "Diagramming", "System Planning", "Technical Design"],
-      color: "from-purple-500 to-pink-500"
+      icon: <Code size={32} />,
+      gradient: { from: theme.tertiary, to: theme.primary },
+      color: "#8B5CF6"
     },
     UX: {
       name: "UX Designer",
       description: "Designs user interfaces and improves user experience",
       skills: ["UI Design", "Prototyping", "User Research", "Visual Design"],
-      color: "from-pink-500 to-rose-500"
+      icon: <Palette size={32} />,
+      gradient: { from: theme.primary, to: theme.tertiary },
+      color: "#EC4899"
     },
     Test: {
       name: "QA Tester",
       description: "Ensures quality through testing and bug detection",
       skills: ["Testing", "Debugging", "Quality Assurance", "Attention to Detail"],
-      color: "from-orange-500 to-red-500"
+      icon: <TestTube size={32} />,
+      gradient: { from: theme.secondary, to: theme.primary },
+      color: "#F59E0B"
     }
   };
 
-  // All 12 questions with proper scoring
+  // Questions data
   const questions = [
     {
       id: 1,
@@ -52,11 +156,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 3.0,
       options: [
-        { text: "Writing clear instructions or outlining requirements", points: { RE: 3 } },
-        { text: "Organizing tools, files, and project structure", points: { CM: 3 } },
-        { text: "Planning how system parts connect and work together", points: { Design: 3 } },
-        { text: "Designing user interfaces and improving usability", points: { UX: 3 } },
-        { text: "Testing and making sure things work correctly", points: { Test: 3 } }
+        { text: "Writing clear instructions or outlining requirements", points: { RE: 3 }, roleKey: 'RE' },
+        { text: "Organizing tools, files, and project structure", points: { CM: 3 }, roleKey: 'CM' },
+        { text: "Planning how system parts connect and work together", points: { Design: 3 }, roleKey: 'Design' },
+        { text: "Designing user interfaces and improving usability", points: { UX: 3 }, roleKey: 'UX' },
+        { text: "Testing and making sure things work correctly", points: { Test: 3 }, roleKey: 'Test' }
       ]
     },
     {
@@ -65,11 +169,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.5,
       options: [
-        { text: "Requirement writer or researcher", points: { RE: 3 } },
-        { text: "Repository/file manager", points: { CM: 3 } },
-        { text: "Systems planner or diagram designer", points: { Design: 3 } },
-        { text: "Interface or layout designer", points: { UX: 3 } },
-        { text: "Tester or debugger", points: { Test: 3 } }
+        { text: "Requirement writer or researcher", points: { RE: 3 }, roleKey: 'RE' },
+        { text: "Repository/file manager", points: { CM: 3 }, roleKey: 'CM' },
+        { text: "Systems planner or diagram designer", points: { Design: 3 }, roleKey: 'Design' },
+        { text: "Interface or layout designer", points: { UX: 3 }, roleKey: 'UX' },
+        { text: "Tester or debugger", points: { Test: 3 }, roleKey: 'Test' }
       ]
     },
     {
@@ -78,10 +182,10 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.0,
       options: [
-        { text: "I like working alone and being detail-focused", points: { Test: 2, CM: 1 } },
-        { text: "I enjoy collaborative work and sharing ideas", points: { RE: 2, UX: 1 } },
-        { text: "I prefer strategic planning and system thinking", points: { Design: 2, RE: 1 } },
-        { text: "I like creative work and visual problem-solving", points: { UX: 2, Design: 1 } }
+        { text: "I like working alone and being detail-focused", points: { Test: 2, CM: 1 }, roleKey: 'Test' },
+        { text: "I enjoy collaborative work and sharing ideas", points: { RE: 2, UX: 1 }, roleKey: 'RE' },
+        { text: "I prefer strategic planning and system thinking", points: { Design: 2, RE: 1 }, roleKey: 'Design' },
+        { text: "I like creative work and visual problem-solving", points: { UX: 2, Design: 1 }, roleKey: 'UX' }
       ]
     },
     {
@@ -90,76 +194,76 @@ const RoleMatch = () => {
       type: "single",
       weight: 1.5,
       options: [
-        { text: "Writing requirements or specifications", points: { RE: 2 } },
-        { text: "Managing shared tools and files", points: { CM: 2 } },
-        { text: "Designing system architecture", points: { Design: 2 } },
-        { text: "UI/UX design and accessibility", points: { UX: 2 } },
-        { text: "Testing and quality control", points: { Test: 2 } }
+        { text: "Writing requirements or specifications", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Managing shared tools and files", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Designing system architecture", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "UI/UX design and accessibility", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Testing and quality control", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
       id: 5,
-      text: "Which of these describe your interests? (Select all that apply)",
+      text: "Which of these describe your interests?",
       type: "multiple",
       weight: 1.0,
       options: [
-        { text: "Writing instructions or organizing project ideas", points: { RE: 1 } },
-        { text: "Keeping track of files, folders, and shared materials", points: { CM: 1 } },
-        { text: "Planning how different features work together", points: { Design: 1 } },
-        { text: "Designing how interfaces should look and feel", points: { UX: 1 } },
-        { text: "Finding problems or mistakes in systems", points: { Test: 1 } }
+        { text: "Writing instructions or organizing project ideas", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Keeping track of files, folders, and shared materials", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Planning how different features work together", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Designing how interfaces should look and feel", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Finding problems or mistakes in systems", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 6,
-      text: "What have you done before? (Select all that apply)",
+      text: "What have you done before?",
       type: "multiple",
       weight: 2.5,
       options: [
-        { text: "Wrote documents, outlines, or plans for projects", points: { RE: 1 } },
-        { text: "Helped keep files and folders organized", points: { CM: 1 } },
-        { text: "Drew diagrams to explain how something works", points: { Design: 1 } },
-        { text: "Sketched website or app designs", points: { UX: 1 } },
-        { text: "Found bugs or tested features", points: { Test: 1 } }
+        { text: "Wrote documents, outlines, or plans for projects", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Helped keep files and folders organized", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Drew diagrams to explain how something works", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Sketched website or app designs", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Found bugs or tested features", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 7,
-      text: "What do you enjoy doing? (Select all that apply)",
+      text: "What do you enjoy doing?",
       type: "multiple",
       weight: 1.5,
       options: [
-        { text: "Writing documents that explain things clearly", points: { RE: 1 } },
-        { text: "Keeping files and content neat and organized", points: { CM: 1 } },
-        { text: "Planning visuals or system structures", points: { Design: 1 } },
-        { text: "Making interfaces simple and easy to use", points: { UX: 1 } },
-        { text: "Catching small details others might miss", points: { Test: 1 } }
+        { text: "Writing documents that explain things clearly", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Keeping files and content neat and organized", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Planning visuals or system structures", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Making interfaces simple and easy to use", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Catching small details others might miss", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 8,
-      text: "Which tools or platforms have you used? (Select all that apply)",
+      text: "Which tools or platforms have you used?",
       type: "multiple",
       weight: 1.0,
       options: [
-        { text: "Written instructions or documentation", points: { RE: 1 } },
-        { text: "Managed files or versions in group settings", points: { CM: 1 } },
-        { text: "Created flowcharts or system diagrams", points: { Design: 1 } },
-        { text: "Designed visual layouts or presentations", points: { UX: 1 } },
-        { text: "Logged issues or verified test results", points: { Test: 1 } }
+        { text: "Written instructions or documentation", points: { RE: 1 }, roleKey: 'RE' },
+        { text: "Managed files or versions in group settings", points: { CM: 1 }, roleKey: 'CM' },
+        { text: "Created flowcharts or system diagrams", points: { Design: 1 }, roleKey: 'Design' },
+        { text: "Designed visual layouts or presentations", points: { UX: 1 }, roleKey: 'UX' },
+        { text: "Logged issues or verified test results", points: { Test: 1 }, roleKey: 'Test' }
       ]
     },
     {
       id: 9,
-      text: "Which behaviors describe you? (Select all that apply)",
+      text: "Which behaviors describe you?",
       type: "multiple",
       weight: 2.0,
       options: [
-        { text: "I help teammates understand requirements", points: { RE: 2 } },
-        { text: "I enjoy organizing to-do lists and folders", points: { CM: 2 } },
-        { text: "I notice when designs or interfaces feel off", points: { UX: 2, Design: 1 } },
-        { text: "I think through edge cases and scenarios", points: { Test: 2, Design: 1 } },
-        { text: "I often write instructions for others", points: { RE: 2, CM: 1 } }
+        { text: "I help teammates understand requirements", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "I enjoy organizing to-do lists and folders", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "I notice when designs or interfaces feel off", points: { UX: 2, Design: 1 }, roleKey: 'UX' },
+        { text: "I think through edge cases and scenarios", points: { Test: 2, Design: 1 }, roleKey: 'Test' },
+        { text: "I often write instructions for others", points: { RE: 2, CM: 1 }, roleKey: 'RE' }
       ]
     },
     {
@@ -168,11 +272,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 1.5,
       options: [
-        { text: "Help define the goals and scope", points: { RE: 2 } },
-        { text: "Set up project structure and tools", points: { CM: 2 } },
-        { text: "Start planning the system architecture", points: { Design: 2 } },
-        { text: "Think about the user experience", points: { UX: 2 } },
-        { text: "Consider testing strategies", points: { Test: 2 } }
+        { text: "Help define the goals and scope", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Set up project structure and tools", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Start planning the system architecture", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Think about the user experience", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Consider testing strategies", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
@@ -181,11 +285,11 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.0,
       options: [
-        { text: "Writing up steps or requirements", points: { RE: 2 } },
-        { text: "Organizing files and documentation", points: { CM: 2 } },
-        { text: "Creating system diagrams", points: { Design: 2 } },
-        { text: "Making visual layouts or mockups", points: { UX: 2 } },
-        { text: "Finding issues and ensuring quality", points: { Test: 2 } }
+        { text: "Writing up steps or requirements", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Organizing files and documentation", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Creating system diagrams", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Making visual layouts or mockups", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Finding issues and ensuring quality", points: { Test: 2 }, roleKey: 'Test' }
       ]
     },
     {
@@ -194,26 +298,168 @@ const RoleMatch = () => {
       type: "single",
       weight: 2.5,
       options: [
-        { text: "Requirements gathering and documentation", points: { RE: 2 } },
-        { text: "Managing project setup and structure", points: { CM: 2 } },
-        { text: "Building logical flows and diagrams", points: { Design: 2 } },
-        { text: "Creating user interfaces", points: { UX: 2 } },
-        { text: "Spotting bugs and issues", points: { Test: 2 } }
+        { text: "Requirements gathering and documentation", points: { RE: 2 }, roleKey: 'RE' },
+        { text: "Managing project setup and structure", points: { CM: 2 }, roleKey: 'CM' },
+        { text: "Building logical flows and diagrams", points: { Design: 2 }, roleKey: 'Design' },
+        { text: "Creating user interfaces", points: { UX: 2 }, roleKey: 'UX' },
+        { text: "Spotting bugs and issues", points: { Test: 2 }, roleKey: 'Test' }
       ]
     }
   ];
 
-  // Calculate results
-  const calculateResults = () => {
-    const scores = {
-      RE: 0,
-      CM: 0,
-      Design: 0,
-      UX: 0,
-      Test: 0
+  // Enhanced Role Character Component with 16personalities-style animations
+  const RoleCharacter = ({ roleKey, isAnimated = false, size = 'medium', showSparkles = false, isHovered = false }) => {
+    const sizeMap = {
+      small: { w: 48, h: 48, icon: 20 },
+      medium: { w: 96, h: 96, icon: 32 },
+      large: { w: 128, h: 128, icon: 40 }
     };
 
-    // Calculate raw scores
+    const dimensions = sizeMap[size];
+    
+    // Enhanced character styles with personality-based gradients and effects
+    const characterStyles = {
+      RE: { 
+        background: 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 50%, #2563EB 100%)',
+        personality: 'analytical',
+        hoverBg: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%)'
+      },
+      CM: { 
+        background: 'linear-gradient(135deg, #10B981 0%, #047857 50%, #059669 100%)',
+        personality: 'organized',
+        hoverBg: 'linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%)'
+      },
+      Design: { 
+        background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 50%, #7C3AED 100%)',
+        personality: 'creative-logical',
+        hoverBg: 'linear-gradient(135deg, #A78BFA 0%, #8B5CF6 50%, #7C3AED 100%)'
+      },  
+      UX: { 
+        background: 'linear-gradient(135deg, #EC4899 0%, #BE185D 50%, #DB2777 100%)',
+        personality: 'creative',
+        hoverBg: 'linear-gradient(135deg, #F472B6 0%, #EC4899 50%, #DB2777 100%)'
+      },
+      Test: { 
+        background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F59E0B 100%)',
+        personality: 'detective',
+        hoverBg: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%)'
+      }
+    };
+
+    const style = characterStyles[roleKey];
+    const currentBg = isHovered ? style.hoverBg : style.background;
+
+    // Personality-based animation classes
+    const getPersonalityAnimation = () => {
+      switch (style.personality) {
+        case 'analytical': return isAnimated ? 'character-think' : '';
+        case 'organized': return isAnimated ? 'character-organize' : '';
+        case 'creative-logical': return isAnimated ? 'character-create-logic' : '';
+        case 'creative': return isAnimated ? 'character-create' : '';
+        case 'detective': return isAnimated ? 'character-investigate' : '';
+        default: return isAnimated ? 'character-bounce' : '';
+      }
+    };
+
+    return (
+      <div 
+        className={`role-character ${getPersonalityAnimation()} ${showSparkles ? 'character-sparkle' : ''}`}
+        style={{
+          width: `${dimensions.w}px`,
+          height: `${dimensions.h}px`,
+          position: 'relative',
+          transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {/* Main character circle */}
+        <div 
+          className="character-circle"
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: currentBg,
+            boxShadow: isHovered 
+              ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.1)' 
+              : '0 8px 32px rgba(0, 0, 0, 0.15)',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative',
+            overflow: 'visible'
+          }}
+        >
+          {/* Character icon */}
+          {React.cloneElement(roles[roleKey].icon, { 
+            size: dimensions.icon,
+            style: { 
+              color: '#ffffff',
+              filter: isHovered ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none',
+              transition: 'all 0.3s ease'
+            }
+          })}
+
+          {/* Personality ring animation */}
+          {isAnimated && (
+            <div 
+              className="personality-ring"
+              style={{
+                position: 'absolute',
+                inset: '-8px',
+                borderRadius: '50%',
+                border: '3px solid',
+                borderColor: 'rgba(255, 255, 255, 0.4)',
+                borderTopColor: 'rgba(255, 255, 255, 0.8)',
+                animation: 'personality-spin 2s linear infinite'
+              }}
+            />
+          )}
+
+          {/* Hover glow effect */}
+          {isHovered && (
+            <div 
+              className="character-glow"
+              style={{
+                position: 'absolute',
+                inset: '-12px',
+                borderRadius: '50%',
+                background: `conic-gradient(from 0deg, ${roles[roleKey].color}40, transparent, ${roles[roleKey].color}40)`,
+                animation: 'glow-rotate 3s linear infinite',
+                zIndex: -1
+              }}
+            />
+          )}
+        </div>
+
+        {/* Enhanced sparkles for selection feedback */}
+        {showSparkles && (
+          <div className="sparkles-container">
+            <div className="sparkle sparkle-1" style={{ fontSize: '18px' }}>✨</div>
+            <div className="sparkle sparkle-2" style={{ fontSize: '16px' }}>⭐</div>
+            <div className="sparkle sparkle-3" style={{ fontSize: '14px' }}>💫</div>
+            <div className="sparkle sparkle-4" style={{ fontSize: '12px' }}>✨</div>
+            <div className="sparkle sparkle-5" style={{ fontSize: '16px' }}>⚡</div>
+          </div>
+        )}
+
+        {/* Personality indicator dots */}
+        {(isAnimated || isHovered) && (
+          <div className="personality-dots">
+            <div className="dot dot-1" style={{ backgroundColor: roles[roleKey].color }} />
+            <div className="dot dot-2" style={{ backgroundColor: roles[roleKey].color }} />
+            <div className="dot dot-3" style={{ backgroundColor: roles[roleKey].color }} />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Calculate results
+  const calculateResults = () => {
+    const scores = { RE: 0, CM: 0, Design: 0, UX: 0, Test: 0 };
+
     Object.entries(answers).forEach(([questionId, answer]) => {
       const question = questions.find(q => q.id === parseInt(questionId));
       if (!question) return;
@@ -237,14 +483,12 @@ const RoleMatch = () => {
       }
     });
 
-    // Normalize scores
     const maxScore = Math.max(...Object.values(scores));
     const normalizedScores = {};
     Object.entries(scores).forEach(([role, score]) => {
       normalizedScores[role] = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
     });
 
-    // Get top 3 recommendations
     const sortedRoles = Object.entries(normalizedScores)
       .filter(([_, score]) => score >= 20)
       .sort((a, b) => b[1] - a[1])
@@ -255,17 +499,13 @@ const RoleMatch = () => {
       role: role,
       score: score,
       roleInfo: roles[role],
-      explanation: generateExplanation(role, score, answers)
+      explanation: generateExplanation(role)
     }));
 
-    return {
-      recommendations,
-      rawScores: scores,
-      normalizedScores
-    };
+    return { recommendations, rawScores: scores, normalizedScores };
   };
 
-  const generateExplanation = (role, score, answers) => {
+  const generateExplanation = (role) => {
     const explanations = {
       RE: "Your responses show strong alignment with requirements engineering. You enjoy documentation, clear communication, and helping others understand project needs.",
       CM: "You demonstrate excellent organizational skills and attention to structure. Your preference for managing tools and maintaining order makes you ideal for configuration management.",
@@ -276,24 +516,28 @@ const RoleMatch = () => {
     return explanations[role] || "Based on your responses, this role aligns well with your skills and interests.";
   };
 
-  const handleAnswer = (answer) => {
-    setIsAnimating(true);
+  const handleAnswer = (answer, option) => {
     const question = questions[currentQuestion];
     
     if (question.type === 'single') {
+      setShowWarning(false);
+      setIsAnimating(true);
       setAnswers({ ...answers, [question.id]: answer });
+      setSelectedOption(option.roleKey);
+      
       setTimeout(() => {
+        setSelectedOption(null);
         if (currentQuestion < questions.length - 1) {
           setCurrentQuestion(currentQuestion + 1);
         } else {
           submitAnswers();
         }
         setIsAnimating(false);
-      }, 300);
+      }, 1500);
     }
   };
 
-  const handleMultipleAnswer = (optionIndex) => {
+  const handleMultipleAnswer = (optionIndex, option) => {
     const question = questions[currentQuestion];
     const currentAnswers = answers[question.id] || [];
     
@@ -307,17 +551,28 @@ const RoleMatch = () => {
         ...answers,
         [question.id]: [...currentAnswers, optionIndex]
       });
+      setSelectedOption(option.roleKey);
+      setTimeout(() => setSelectedOption(null), 1000);
     }
+    setShowWarning(false);
   };
 
   const nextQuestion = () => {
     const question = questions[currentQuestion];
-    if (question.type === 'multiple' && (!answers[question.id] || answers[question.id].length === 0)) {
-      alert("Please select at least one option");
+    
+    if (question.type === 'single' && answers[question.id] === undefined) {
+      setShowWarning(true);
       return;
     }
     
+    if (question.type === 'multiple' && (!answers[question.id] || answers[question.id].length === 0)) {
+      setShowWarning(true);
+      return;
+    }
+    
+    setShowWarning(false);
     setIsAnimating(true);
+    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
@@ -330,6 +585,7 @@ const RoleMatch = () => {
 
   const prevQuestion = () => {
     if (currentQuestion > 0) {
+      setShowWarning(false);
       setIsAnimating(true);
       setTimeout(() => {
         setCurrentQuestion(currentQuestion - 1);
@@ -341,448 +597,1428 @@ const RoleMatch = () => {
   const submitAnswers = () => {
     const calculatedResults = calculateResults();
     setResults(calculatedResults);
-    setShowResults(true);
+    setCurrentPage('results');
   };
 
   const restart = () => {
     setCurrentQuestion(0);
     setAnswers({});
-    setShowResults(false);
     setResults(null);
+    setShowWarning(false);
+    setStudentInfo({ firstName: '', lastName: '', buId: '', email: '' });
+    setStudentInfoErrors({});
+    setCurrentPage('studentInfo');
   };
 
   const exportToCSV = () => {
     if (!results) return;
-    
-    let csv = "Rank,Role,Score,Description\n";
-    results.recommendations.forEach(rec => {
-      csv += `${rec.rank},"${rec.roleInfo.name}",${rec.score}%,"${rec.explanation}"\n`;
-    });
+    let csv = "Name,BU Email,BU ID,Role 1,Role 2,Role 3\n";
+    csv += `"${studentInfo.firstName} ${studentInfo.lastName}","${studentInfo.email}","${studentInfo.buId}",${results.recommendations.map(rec => `"${rec.roleInfo.name}"`).join(',')}\n`;
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'rolematch-results.csv';
+    a.download = `rolematch-results-${studentInfo.buId}.csv`;
     a.click();
   };
 
   const exportToPDF = () => {
-  const doc = new jsPDF();
-  
-  // Add background color for header
-  doc.setFillColor(99, 102, 241); // Purple color
-  doc.rect(0, 0, 210, 40, 'F');
-  
-  // Add title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(28);
-  doc.setFont(undefined, 'bold');
-  doc.text('RoleMatch Results', 105, 25, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  // Add date and subtitle
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'normal');
-  doc.text(`Generated on ${new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })}`, 105, 50, { align: 'center' });
-  
-  // Add a line separator
-  doc.setDrawColor(200, 200, 200);
-  doc.line(20, 60, 190, 60);
-  
-  // Add recommendations
-  let yPosition = 75;
-  
-  results.recommendations.forEach((rec, index) => {
-    // Check if we need a new page
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
+    if (!results) return;
+    window.print();
+  };
+
+  const shareResults = async () => {
+    if (!results) return;
+    
+    const text = `My RoleMatch Results:\n\n${results.recommendations.map(rec => 
+      `${rec.rank}. ${rec.roleInfo.name} (${rec.score}% match)`
+    ).join('\n')}\n\nDiscover your perfect team role at RoleMatch!`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'RoleMatch Results', text: text });
+        setShareNotification('Results shared successfully!');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          copyToClipboard(text);
+        }
+      }
+    } else {
+      copyToClipboard(text);
     }
     
-    // Rank circle
-    doc.setFillColor(99, 102, 241);
-    doc.circle(30, yPosition, 8, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text(rec.rank.toString(), 30, yPosition + 1, { align: 'center' });
-    
-    // Role name and percentage
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(18);
-    doc.text(rec.roleInfo.name, 45, yPosition);
-    
-    doc.setFontSize(14);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`${rec.score}% Match`, 45, yPosition + 8);
-    
-    // Role description
-    doc.setFontSize(11);
-    doc.setTextColor(60, 60, 60);
-    doc.setFont(undefined, 'italic');
-    const descLines = doc.splitTextToSize(rec.roleInfo.description, 140);
-    doc.text(descLines, 45, yPosition + 16);
-    
-    // Explanation
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(0, 0, 0);
-    const explainLines = doc.splitTextToSize(rec.explanation, 140);
-    doc.text(explainLines, 45, yPosition + 16 + (descLines.length * 5) + 5);
-    
-    // Skills
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('Key Skills:', 45, yPosition + 16 + (descLines.length * 5) + (explainLines.length * 5) + 10);
-    
-    doc.setFont(undefined, 'normal');
-    const skillsText = rec.roleInfo.skills.join(' • ');
-    doc.text(skillsText, 45, yPosition + 16 + (descLines.length * 5) + (explainLines.length * 5) + 16);
-    
-    // Add separator line
-    yPosition += 16 + (descLines.length * 5) + (explainLines.length * 5) + 25;
-    if (index < results.recommendations.length - 1) {
-      doc.setDrawColor(220, 220, 220);
-      doc.line(40, yPosition, 170, yPosition);
-      yPosition += 10;
-    }
-  });
+    setTimeout(() => setShareNotification(''), 3000);
+  };
   
-  // Add footer
-  doc.setFontSize(10);
-  doc.setTextColor(150, 150, 150);
-  doc.text('RoleMatch - Smart Role Recommender', 105, 285, { align: 'center' });
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setShareNotification('Results copied to clipboard!');
+    }).catch(() => {
+      setShareNotification('Unable to share results');
+    });
+  };
 
-  // Save the PDF
-  doc.save('rolematch-results.pdf');
-};
-
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-
-  if (showResults && results) {
-    return (
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-500`}>
-        <div className="relative overflow-hidden">
-          {/* Animated background */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
-          </div>
-
-          <div className="relative z-10 container mx-auto px-4 py-8">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8">
-              <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Your Results
-              </h1>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`p-3 rounded-full ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-700'} hover:scale-110 transition-all`}
-                >
-                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-                <button
-                  onClick={restart}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <RefreshCw size={20} />
-                  Retake Quiz
-                </button>
-              </div>
-            </div>
-
-            {/* Results Cards */}
-            <div className="grid gap-6 mb-8">
-              {results.recommendations.map((rec, index) => (
-                <div
-                  key={rec.role}
-                  className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 shadow-xl hover:scale-[1.02] transition-all duration-300`}
-                  style={{
-                    animation: `slideInUp 0.5s ease-out ${index * 0.1}s both`
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${rec.roleInfo.color} flex items-center justify-center text-white font-bold text-2xl`}>
-                          {rec.rank}
-                        </div>
-                        <div>
-                          <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {rec.roleInfo.name}
-                          </h3>
-                          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {rec.score}% Match
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <p className={`mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {rec.explanation}
-                      </p>
-                      
-                      <p className={`mb-4 italic ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {rec.roleInfo.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        {rec.roleInfo.skills.map(skill => (
-                          <span
-                            key={skill}
-                            className={`px-3 py-1 rounded-full text-sm ${
-                              darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="ml-6">
-                      <div className="relative w-24 h-24">
-                        <svg className="w-24 h-24 transform -rotate-90">
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="36"
-                            stroke={darkMode ? '#374151' : '#e5e7eb'}
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="48"
-                            cy="48"
-                            r="36"
-                            stroke="url(#gradient)"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${2 * Math.PI * 36}`}
-                            strokeDashoffset={`${2 * Math.PI * 36 * (1 - rec.score / 100)}`}
-                            className="transition-all duration-1000"
-                          />
-                          <defs>
-                            <linearGradient id="gradient">
-                              <stop offset="0%" stopColor="#8b5cf6" />
-                              <stop offset="100%" stopColor="#ec4899" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {rec.score}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Export Options */}
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 shadow-xl`}>
-              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Export Your Results
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                <button
-                  onClick={exportToCSV}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Download size={20} />
-                  Download CSV
-                </button>
-                <button
-                  onClick={exportToPDF}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Download size={20} />
-                  Download PDF
-                </button>
-                <button
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-                >
-                  <Share2 size={20} />
-                  Share Results
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-500`}>
-      <div className="relative overflow-hidden">
+  // Landing Page Component
+  const LandingPage = () => (
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
         {/* Animated background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <div style={{ 
+            position: 'absolute', width: '400px', height: '400px', 
+            top: '-200px', right: '-200px', borderRadius: '50%', 
+            backgroundColor: theme.primary, opacity: 0.1, filter: 'blur(80px)',
+            animation: 'float 20s ease-in-out infinite'
+          }}></div>
+          <div style={{ 
+            position: 'absolute', width: '350px', height: '350px', 
+            bottom: '-175px', left: '-175px', borderRadius: '50%', 
+            backgroundColor: theme.secondary, opacity: 0.1, filter: 'blur(80px)',
+            animation: 'float 25s ease-in-out infinite reverse'
+          }}></div>
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className={`text-5xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              RoleMatch
-            </h1>
-            <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Find Your Perfect Team Role
-            </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Question {currentQuestion + 1} of {questions.length}
-              </span>
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          {/* Navigation */}
+          <nav style={{ padding: '24px' }}>
+            <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: theme.primary }}>RoleMatch</h1>
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-full ${darkMode ? 'bg-gray-800 text-yellow-400' : 'bg-white text-gray-700'} hover:scale-110 transition-all`}
+                onClick={() => setCurrentPage('about')}
+                style={{ 
+                  color: theme.onSurface, backgroundColor: 'transparent',
+                  border: `1px solid ${theme.outline}`, fontSize: '16px', fontWeight: '500',
+                  padding: '8px 16px', borderRadius: '9999px', cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = theme.surfaceVariant;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
               >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+                About
               </button>
             </div>
-            <div className={`h-2 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} overflow-hidden`}>
-              <div
-                className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
+          </nav>
+
+          {/* Hero Section */}
+          <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '3.75rem', fontWeight: '700', marginBottom: '24px', color: theme.onBackground }}>
+                Find Your Perfect<br />
+                <span style={{ 
+                  background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text', display: 'inline-block'
+                }}>Team Role</span>
+              </h2>
+              <p style={{ fontSize: '1.25rem', marginBottom: '32px', color: theme.onSurfaceVariant }}>
+                Discover where you'll thrive in your next software engineering project with our intelligent role matching system
+              </p>
             </div>
-          </div>
 
-          {/* Question Card */}
-          <div
-            className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 shadow-xl transition-all duration-300 ${
-              isAnimating ? 'scale-95 opacity-50' : 'scale-100 opacity-100'
-            }`}
-          >
-            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {questions[currentQuestion].text}
-            </h2>
+            <button
+              onClick={() => setCurrentPage('studentInfo')}
+              style={{ 
+                backgroundColor: theme.primary, color: theme.onPrimary,
+                boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                padding: '16px 32px', borderRadius: '9999px', fontSize: '18px', fontWeight: '600',
+                display: 'inline-flex', alignItems: 'center', gap: '12px',
+                transition: 'all 0.3s ease', border: 'none', cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
+              }}
+            >
+              Start Assessment
+              <ArrowRight size={20} />
+            </button>
 
-            <div className="space-y-3">
-              {questions[currentQuestion].options.map((option, index) => {
-                const question = questions[currentQuestion];
-                const isSelected = question.type === 'single' 
-                  ? answers[question.id] === index
-                  : (answers[question.id] || []).includes(index);
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      if (question.type === 'single') {
-                        handleAnswer(index);
-                      } else {
-                        handleMultipleAnswer(index);
-                      }
-                    }}
-                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white scale-[1.02]'
-                        : darkMode
-                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {question.type === 'multiple' && (
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected ? 'border-white' : darkMode ? 'border-gray-500' : 'border-gray-400'
-                        }`}>
-                          {isSelected && <CheckCircle2 size={16} />}
+            {/* Role Preview Section - FIXED: Better alignment and spacing */}
+            <div style={{ marginTop: '80px', marginBottom: '64px' }}>
+              <h3 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '48px', color: theme.onSurface, textAlign: 'center' }}>
+                Discover Your Role Among
+              </h3>
+              <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px' }}>
+                {/* Top row - 3 roles - FIXED: Perfect centering */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'flex-start',
+                  gap: '40px', 
+                  marginBottom: '60px',
+                  flexWrap: 'wrap'
+                }}>
+                  {Object.entries(roles).slice(0, 3).map(([key, role]) => (
+                    <div 
+                      key={key} 
+                      style={{ 
+                        backgroundColor: theme.elevation1,
+                        border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
+                        transform: hoveredRole === key ? 'scale(1.02) translateY(-5px)' : 'scale(1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: '36px', 
+                        borderRadius: '32px', 
+                        textAlign: 'center', 
+                        cursor: 'pointer',
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        width: '240px',
+                        height: '220px',
+                        boxShadow: hoveredRole === key 
+                          ? `0 25px 70px ${role.color}40, 0 10px 35px rgba(0, 0, 0, 0.15)` 
+                          : '0 8px 30px rgba(0, 0, 0, 0.08)',
+                        position: 'relative',
+                        overflow: 'visible'
+                      }}
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
+                    >
+                      <RoleCharacter 
+                        roleKey={key} 
+                        isAnimated={hoveredRole === key} 
+                        isHovered={hoveredRole === key}
+                        size="medium" 
+                      />
+                      <h4 style={{ 
+                        color: theme.onSurface, 
+                        marginTop: '28px', 
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        lineHeight: '1.3',
+                        transition: 'all 0.3s ease',
+                        transform: hoveredRole === key ? 'translateY(-3px)' : 'translateY(0)'
+                      }}>
+                        {role.name}
+                      </h4>
+                      
+                      {/* Hover tooltip - FIXED: Better positioning */}
+                      {hoveredRole === key && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%) translateY(15px)',
+                          backgroundColor: theme.surface,
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          boxShadow: '0 15px 50px rgba(0, 0, 0, 0.25)',
+                          width: '300px',
+                          zIndex: 1000,
+                          border: `2px solid ${role.color}`,
+                          animation: 'tooltip-appear 0.3s ease-out'
+                        }}>
+                          <p style={{ 
+                            color: theme.onSurface, 
+                            fontSize: '14px', 
+                            lineHeight: '1.5',
+                            margin: 0,
+                            textAlign: 'center',
+                            fontWeight: '500'
+                          }}>
+                            {role.description}
+                          </p>
+                          
+                          {/* Tooltip arrow */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            borderBottom: `8px solid ${role.color}`
+                          }} />
                         </div>
                       )}
-                      <span className="flex-1">{option.text}</span>
                     </div>
-                  </button>
-                );
-              })}
+                  ))}
+                </div>
+                
+                {/* Bottom row - 2 roles centered - FIXED: Perfect spacing */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'flex-start',
+                  gap: '80px',
+                  flexWrap: 'wrap'
+                }}>
+                  {Object.entries(roles).slice(3, 5).map(([key, role]) => (
+                    <div 
+                      key={key} 
+                      style={{ 
+                        backgroundColor: theme.elevation1,
+                        border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
+                        transform: hoveredRole === key ? 'scale(1.02) translateY(-5px)' : 'scale(1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: '36px', 
+                        borderRadius: '32px', 
+                        textAlign: 'center', 
+                        cursor: 'pointer',
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        width: '240px',
+                        height: '220px',
+                        boxShadow: hoveredRole === key 
+                          ? `0 25px 70px ${role.color}40, 0 10px 35px rgba(0, 0, 0, 0.15)` 
+                          : '0 8px 30px rgba(0, 0, 0, 0.08)',
+                        position: 'relative',
+                        overflow: 'visible'
+                      }}
+                      onMouseEnter={() => setHoveredRole(key)}
+                      onMouseLeave={() => setHoveredRole(null)}
+                    >
+                      <RoleCharacter 
+                        roleKey={key} 
+                        isAnimated={hoveredRole === key} 
+                        isHovered={hoveredRole === key}
+                        size="medium" 
+                      />
+                      <h4 style={{ 
+                        color: theme.onSurface, 
+                        marginTop: '28px', 
+                        fontWeight: '600',
+                        fontSize: '16px',
+                        lineHeight: '1.3',
+                        transition: 'all 0.3s ease',
+                        transform: hoveredRole === key ? 'translateY(-3px)' : 'translateY(0)'
+                      }}>
+                        {role.name}
+                      </h4>
+                      
+                      {/* Hover tooltip - FIXED: Position above for bottom row */}
+                      {hoveredRole === key && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '100%',
+                          left: '50%',
+                          transform: 'translateX(-50%) translateY(-15px)',
+                          backgroundColor: theme.surface,
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          boxShadow: '0 15px 50px rgba(0, 0, 0, 0.25)',
+                          width: '300px',
+                          zIndex: 1000,
+                          border: `2px solid ${role.color}`,
+                          animation: 'tooltip-appear 0.3s ease-out'
+                        }}>
+                          <p style={{ 
+                            color: theme.onSurface, 
+                            fontSize: '14px', 
+                            lineHeight: '1.5',
+                            margin: 0,
+                            textAlign: 'center',
+                            fontWeight: '500'
+                          }}>
+                            {role.description}
+                          </p>
+                          
+                          {/* Tooltip arrow pointing down */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            borderTop: `8px solid ${role.color}`
+                          }} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Navigation */}
-            <div className="flex justify-between items-center mt-8">
-              <button
-                onClick={prevQuestion}
-                disabled={currentQuestion === 0}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                  currentQuestion === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : darkMode
-                    ? 'bg-gray-700 text-white hover:bg-gray-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                <ChevronLeft size={20} />
-                Previous
-              </button>
+            {/* Features */}
+            <div style={{ 
+              maxWidth: '900px', 
+              margin: '80px auto 40px auto', 
+              padding: '0 20px'
+            }}>
+              {/* First row - 2 cards */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                gap: '32px', 
+                marginBottom: '32px',
+                maxWidth: '600px',
+                margin: '0 auto 32px auto'
+              }}>
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.primaryContainer 
+                  }}>
+                    <Zap size={28} style={{ color: theme.onPrimaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Quick & Easy
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Complete the assessment in under 5 minutes
+                  </p>
+                </div>
 
-              {questions[currentQuestion].type === 'multiple' && (
-                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Select all that apply
-                </span>
-              )}
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.secondaryContainer 
+                  }}>
+                    <Target size={28} style={{ color: theme.onSecondaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Accurate Matching
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Smart algorithm analyzes your skills and preferences
+                  </p>
+                </div>
+              </div>
 
-              <button
-                onClick={nextQuestion}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:scale-105 transition-all flex items-center gap-2"
-              >
-                {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
-                <ChevronRight size={20} />
-              </button>
+              {/* Second row - 1 centered card */}
+              <div style={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '40px'
+              }}>
+                <div style={{ 
+                  backgroundColor: theme.elevation1, 
+                  padding: '32px', 
+                  borderRadius: '24px', 
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                  maxWidth: '320px',
+                  width: '100%'
+                }}>
+                  <div style={{ 
+                    width: '64px', 
+                    height: '64px', 
+                    borderRadius: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    margin: '0 auto 20px', 
+                    backgroundColor: theme.tertiaryContainer 
+                  }}>
+                    <Users size={28} style={{ color: theme.onTertiaryContainer }} />
+                  </div>
+                  <h3 style={{ 
+                    color: theme.onSurface, 
+                    fontSize: '20px', 
+                    fontWeight: '600', 
+                    marginBottom: '12px' 
+                  }}>
+                    Better Teams
+                  </h3>
+                  <p style={{ 
+                    color: theme.onSurfaceVariant, 
+                    fontSize: '16px', 
+                    lineHeight: '1.5' 
+                  }}>
+                    Build stronger, more effective project teams
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+        
+        @keyframes float {
+          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
-        @keyframes slideInUp {
-          from {
-            transform: translateY(30px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
+        @keyframes float {
+          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
-        .animate-blob {
-          animation: blob 7s infinite;
+        @keyframes character-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
         }
         
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-          animation-delay: 4s;
+        .character-bounce {
+          animation: character-bounce 0.8s ease-in-out infinite;
         }
       `}</style>
     </div>
   );
+
+  // Student Info Page Component
+  const StudentInfoPage = () => {
+    const [localInfo, setLocalInfo] = useState(studentInfo);
+    
+    const handleLocalInputChange = (field) => (e) => {
+      const { value } = e.target;
+      setLocalInfo(prev => ({ ...prev, [field]: value }));
+    };
+    
+    const handleLocalBuIdChange = (e) => {
+      const value = e.target.value.toUpperCase();
+      if (value === '' || /^U\d{0,8}$/.test(value)) {
+        setLocalInfo(prev => ({ ...prev, buId: value }));
+      }
+    };
+    
+    const validateLocalInfo = () => {
+      const errors = {};
+      
+      if (!localInfo.firstName.trim()) errors.firstName = 'First name is required';
+      if (!localInfo.lastName.trim()) errors.lastName = 'Last name is required';
+      
+      const buIdRegex = /^U\d{8}$/;
+      if (!localInfo.buId.trim()) {
+        errors.buId = 'BU ID is required';
+      } else if (!buIdRegex.test(localInfo.buId)) {
+        errors.buId = 'BU ID must start with U followed by 8 digits (e.g., U41513646)';
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!localInfo.email.trim()) {
+        errors.email = 'Email is required';
+      } else if (!emailRegex.test(localInfo.email)) {
+        errors.email = 'Please enter a valid email address';
+      } else if (!localInfo.email.toLowerCase().includes('bu.edu')) {
+        errors.email = 'Please use your BU email address';
+      }
+      
+      setStudentInfoErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
+    
+    const handleSubmit = () => {
+      if (validateLocalInfo()) {
+        setStudentInfo(localInfo);
+        setCurrentPage('quiz');
+      }
+    };
+    
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+        <div style={{ position: 'relative' }}>
+          {/* Navigation */}
+          <nav style={{ padding: '16px 24px', marginBottom: '16px' }}>
+            <div style={{ maxWidth: '84rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                onClick={() => setCurrentPage('landing')}
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  backgroundColor: theme.primaryContainer,
+                  color: theme.onPrimaryContainer,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <Home size={20} />
+                RoleMatch
+              </button>
+            </div>
+          </nav>
+
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              top: '10%', left: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.primary, filter: 'blur(80px)',
+              animation: 'float 20s ease-in-out infinite'
+            }}></div>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              bottom: '10%', right: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.secondary, filter: 'blur(80px)',
+              animation: 'float 25s ease-in-out infinite reverse'
+            }}></div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, maxWidth: '42rem', margin: '0 auto', padding: '32px 16px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '8px', color: theme.onBackground }}>
+                Student Information
+              </h1>
+              <p style={{ fontSize: '1.125rem', color: theme.onSurfaceVariant }}>
+                Please enter your details to begin the assessment
+              </p>
+            </div>
+
+            <div style={{ 
+              backgroundColor: theme.surface,
+              boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+              borderRadius: '24px', padding: '40px'
+            }}>
+              {/* First Name */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <User size={20} />
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.firstName}
+                  onChange={handleLocalInputChange('firstName')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.firstName ? theme.error : theme.outline
+                  }}
+                  placeholder="Enter your first name"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.firstName ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.firstName && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.firstName}
+                  </p>
+                )}
+              </div>
+
+              {/* Last Name */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <User size={20} />
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.lastName}
+                  onChange={handleLocalInputChange('lastName')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.lastName ? theme.error : theme.outline
+                  }}
+                  placeholder="Enter your last name"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.lastName ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.lastName && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.lastName}
+                  </p>
+                )}
+              </div>
+
+              {/* BU ID */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <CreditCard size={20} />
+                  BU ID
+                </label>
+                <input
+                  type="text"
+                  value={localInfo.buId}
+                  onChange={handleLocalBuIdChange}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.buId ? theme.error : theme.outline
+                  }}
+                  placeholder="U12345678"
+                  maxLength={9}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.buId ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.buId && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.buId}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', marginBottom: '8px', fontSize: '16px', color: theme.onSurface }}>
+                  <Mail size={20} />
+                  BU Email
+                </label>
+                <input
+                  type="email"
+                  value={localInfo.email}
+                  onChange={handleLocalInputChange('email')}
+                  style={{ 
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: '2px solid',
+                    fontSize: '16px', transition: 'all 0.3s ease', outline: 'none', boxSizing: 'border-box',
+                    backgroundColor: theme.elevation1, color: theme.onSurface,
+                    borderColor: studentInfoErrors.email ? theme.error : theme.outline
+                  }}
+                  placeholder="yourname@bu.edu"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = theme.primary;
+                    e.target.style.boxShadow = `0 0 0 3px ${theme.primary}20`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = studentInfoErrors.email ? theme.error : theme.outline;
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+                {studentInfoErrors.email && (
+                  <p style={{ marginTop: '6px', fontSize: '14px', fontWeight: '500', color: theme.error }}>
+                    {studentInfoErrors.email}
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                style={{ 
+                  width: '100%', padding: '16px 24px', borderRadius: '9999px', fontWeight: '600', fontSize: '18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', marginTop: '32px',
+                  backgroundColor: theme.primary, color: theme.onPrimary,
+                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
+                }}
+              >
+                Start Assessment
+                <ArrowRight size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // About Page Component
+  const AboutPage = () => (
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
+        <nav style={{ padding: '24px' }}>
+          <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button
+              onClick={() => setCurrentPage('landing')}
+              style={{ 
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '12px 24px', borderRadius: '12px',
+                backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                fontSize: '16px', fontWeight: '600', transition: 'all 0.3s ease',
+                border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <Home size={20} />
+              RoleMatch
+            </button>
+          </div>
+        </nav>
+
+        <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '48px 24px' }}>
+          <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '32px', color: theme.onBackground }}>About RoleMatch</h1>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <section style={{ backgroundColor: theme.elevation1, padding: '24px', borderRadius: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '16px', color: theme.primary }}>Our Mission</h2>
+              <p style={{ fontSize: '1.125rem', lineHeight: '1.625', color: theme.onSurfaceVariant }}>
+                RoleMatch is a smart role recommendation system created for CS673 Software Engineering course. 
+                It's designed to revolutionize team formation by matching individuals to their optimal project roles.
+              </p>
+            </section>
+
+            <section style={{ backgroundColor: theme.elevation1, padding: '24px', borderRadius: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '16px', color: theme.primary }}>Our Team</h2>
+              <ul style={{ listStyle: 'none', padding: 0, color: theme.onSurfaceVariant }}>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Gagan Veginati</strong> - Software Designer and Developer</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Swamy Tuttagunta</strong> - Software Developer, Team Lead</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Yuqing Zheng</strong> - UX Developer</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Brady Wu</strong> - Software Tester</li>
+                <li style={{ marginBottom: '8px', lineHeight: '1.6' }}>• <strong>Paul Mulroney</strong> - Project Manager</li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Quiz Page Component - COMPLETELY REWRITTEN TO FIX DUPLICATION
+  const QuizPage = () => {
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const currentQ = questions[currentQuestion];
+
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+        <div style={{ position: 'relative' }}>
+          {/* Background */}
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              top: '25%', left: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.primary, filter: 'blur(80px)',
+              animation: 'float 20s ease-in-out infinite'
+            }}></div>
+            <div style={{ 
+              position: 'absolute', width: '400px', height: '400px', 
+              bottom: '25%', right: '-200px', borderRadius: '50%', 
+              backgroundColor: theme.secondary, filter: 'blur(80px)',
+              animation: 'float 25s ease-in-out infinite reverse'
+            }}></div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, maxWidth: '56rem', margin: '0 auto', padding: '32px 16px' }}>
+            {/* Header with Home Button */}
+            <nav style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  onClick={() => setCurrentPage('landing')}
+                  style={{ 
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '12px 24px', borderRadius: '12px',
+                    backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                    fontSize: '16px', fontWeight: '600', transition: 'all 0.3s ease',
+                    border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  <Home size={20} />
+                  RoleMatch
+                </button>
+                <div style={{ fontSize: '14px', fontWeight: '500', color: theme.onSurfaceVariant }}>
+                  Question {currentQuestion + 1} of {questions.length}
+                </div>
+              </div>
+            </nav>
+            
+            {/* Student Info Display */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '2.25rem', fontWeight: '700', marginBottom: '8px', color: theme.onBackground }}>
+                RoleMatch Assessment
+              </h1>
+              <p style={{ fontSize: '1.125rem', color: theme.onSurfaceVariant }}>
+                {studentInfo.firstName} {studentInfo.lastName} ({studentInfo.buId})
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ 
+                height: '8px', borderRadius: '9999px', overflow: 'hidden',
+                backgroundColor: theme.surfaceVariant
+              }}>
+                <div style={{ 
+                  height: '100%', width: `${progress}%`,
+                  background: `linear-gradient(90deg, ${theme.primary} 0%, ${theme.tertiary} 100%)`,
+                  transition: 'width 0.5s ease-out'
+                }} />
+              </div>
+            </div>
+
+            {/* Question Card */}
+            <div style={{
+              backgroundColor: theme.surface,
+              boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+              borderRadius: '24px',
+              padding: '40px',
+              marginBottom: '24px',
+              transform: isAnimating ? 'scale(0.95)' : 'scale(1)',
+              opacity: isAnimating ? 0.5 : 1,
+              transition: 'all 0.3s ease'
+            }}>
+              {/* Question Text */}
+              <h2 style={{ 
+                fontSize: '1.75rem', fontWeight: '700', marginBottom: '32px', 
+                textAlign: 'center', color: theme.onSurface, lineHeight: '1.4'
+              }}>
+                {currentQ.text}
+              </h2>
+
+              {/* Warning Message */}
+              {showWarning && (
+                <div style={{ 
+                  backgroundColor: theme.error + '20',
+                  marginBottom: '24px', padding: '16px', borderRadius: '16px',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  animation: 'shake 0.5s ease-in-out'
+                }}>
+                  <Info size={20} style={{ color: theme.error }} />
+                  <span style={{ color: theme.error, fontWeight: '500' }}>
+                    {currentQ.type === 'multiple' 
+                      ? 'Please select at least one option' 
+                      : 'Please select an option'}
+                  </span>
+                </div>
+              )}
+
+              {/* Options Container */}
+              <div style={{ 
+                display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px'
+              }}>
+                {currentQ.options.map((option, index) => {
+                  const isSelected = currentQ.type === 'single' 
+                    ? answers[currentQ.id] === index
+                    : (answers[currentQ.id] || []).includes(index);
+
+                  return (
+                    <div key={index} style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => {
+                          if (currentQ.type === 'single') {
+                            handleAnswer(index, option);
+                          } else {
+                            handleMultipleAnswer(index, option);
+                          }
+                        }}
+                        style={{ 
+                          backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
+                          color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
+                          borderColor: isSelected ? theme.primary : 'transparent',
+                          boxShadow: isSelected ? '0 8px 32px rgba(0, 100, 149, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.05)',
+                          width: '100%', textAlign: 'left', padding: '20px 24px',
+                          borderRadius: '16px', transition: 'all 0.3s ease',
+                          border: '2px solid', cursor: 'pointer',
+                          fontSize: '16px', fontWeight: '500',
+                          transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) e.target.style.transform = 'scale(1.01)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = isSelected ? 'scale(1.02)' : 'scale(1)';
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          {currentQ.type === 'multiple' && (
+                            <div style={{ 
+                              width: '24px', height: '24px', borderRadius: '8px',
+                              border: '2px solid', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              backgroundColor: isSelected ? theme.primary : 'transparent',
+                              borderColor: isSelected ? theme.primary : theme.outline,
+                              flexShrink: 0
+                            }}>
+                              {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
+                            </div>
+                          )}
+                          <span style={{ flex: 1, lineHeight: '1.5' }}>
+                            {option.text}
+                          </span>
+                        </div>
+                      </button>
+                      
+                      {/* Enhanced Character Animation - FIXED: Better positioning */}
+                      {selectedOption === option.roleKey && (
+                        <div style={{
+                          position: 'absolute', 
+                          right: '-140px', 
+                          top: '50%',
+                          transform: 'translateY(-50%)', 
+                          zIndex: 1000,
+                          animation: 'character-entrance 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}>
+                          <RoleCharacter 
+                            roleKey={option.roleKey} 
+                            isAnimated={true} 
+                            isHovered={true}
+                            size="large" 
+                            showSparkles={true}
+                          />
+                          
+                          {/* Character speech bubble - FIXED: Better positioning */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '-70px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: theme.surface,
+                            padding: '12px 16px',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+                            border: `2px solid ${roles[option.roleKey].color}`,
+                            animation: 'speech-bubble 0.5s ease-out 0.4s both',
+                            whiteSpace: 'nowrap',
+                            zIndex: 1001
+                          }}>
+                            <p style={{ 
+                              color: theme.onSurface, 
+                              fontSize: '14px', 
+                              fontWeight: '600',
+                              margin: 0
+                            }}>
+                              Great choice! 🎉
+                            </p>
+                            {/* Speech bubble arrow */}
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '-8px',
+                              left: '50%',
+                              transform: 'translateX(-50%)',
+                              width: 0,
+                              height: 0,
+                              borderLeft: '8px solid transparent',
+                              borderRight: '8px solid transparent',
+                              borderTop: `8px solid ${roles[option.roleKey].color}`
+                            }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Navigation */}
+              <div style={{ 
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
+                <button
+                  onClick={prevQuestion}
+                  disabled={currentQuestion === 0}
+                  style={{ 
+                    backgroundColor: currentQuestion === 0 ? theme.surfaceVariant : theme.elevation2,
+                    color: currentQuestion === 0 ? theme.onSurfaceVariant : theme.onSurface,
+                    padding: '16px 24px', borderRadius: '9999px', fontWeight: '600',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    border: 'none', cursor: currentQuestion === 0 ? 'not-allowed' : 'pointer',
+                    opacity: currentQuestion === 0 ? 0.5 : 1,
+                    transition: 'all 0.3s ease', fontSize: '16px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (currentQuestion > 0) e.target.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                  Previous
+                </button>
+
+                {currentQ.type === 'multiple' && (
+                  <span style={{ 
+                    color: theme.onSurfaceVariant, fontSize: '14px', 
+                    fontWeight: '500', fontStyle: 'italic'
+                  }}>
+                    Select all that apply
+                  </span>
+                )}
+
+                <button
+                  onClick={nextQuestion}
+                  style={{ 
+                    backgroundColor: theme.primary, color: theme.onPrimary,
+                    boxShadow: '0 8px 32px rgba(0, 100, 149, 0.3)',
+                    padding: '16px 24px', borderRadius: '9999px', fontWeight: '600',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    border: 'none', cursor: 'pointer', transition: 'all 0.3s ease',
+                    fontSize: '16px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.05)';
+                    e.target.style.boxShadow = '0 12px 40px rgba(0, 100, 149, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.3)';
+                  }}
+                >
+                  {currentQuestion === questions.length - 1 ? 'Get Results' : 'Next'}
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes slideInBounce {
+            0% {
+              opacity: 0;
+              transform: translateX(30px) translateY(-50%) scale(0.8);
+            }
+            60% {
+              opacity: 1;
+              transform: translateX(-5px) translateY(-50%) scale(1.1);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0) translateY(-50%) scale(1);
+            }
+          }
+          
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+            20%, 40%, 60%, 80% { transform: translateX(3px); }
+          }
+          
+          .character-sparkle {
+            animation: character-bounce 0.8s ease-in-out infinite;
+          }
+          
+          .sparkles-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+          
+          .sparkle {
+            position: absolute;
+            font-size: 16px;
+            animation: sparkle-float 2s ease-in-out infinite;
+          }
+          
+          .sparkle-1 {
+            top: -10px;
+            right: -10px;
+            animation-delay: 0s;
+          }
+          
+          .sparkle-2 {
+            bottom: -10px;
+            left: -10px;
+            animation-delay: 0.7s;
+          }
+          
+          .sparkle-3 {
+            top: 50%;
+            left: -15px;
+            animation-delay: 1.4s;
+          }
+          
+          @keyframes sparkle-float {
+            0%, 100% {
+              opacity: 0;
+              transform: translateY(0) rotate(0deg) scale(0.5);
+            }
+            50% {
+              opacity: 1;
+              transform: translateY(-10px) rotate(180deg) scale(1);
+            }
+          }
+        `}</style>
+      </div>
+    );
+  };
+
+  // Results Page Component
+  const ResultsPage = () => (
+    <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.2 }}>
+          {results.recommendations.map((rec, index) => (
+            <div key={rec.role} style={{ 
+              background: `linear-gradient(135deg, ${rec.roleInfo.gradient.from} 0%, ${rec.roleInfo.gradient.to} 100%)`,
+              position: 'absolute', width: '400px', height: '400px', borderRadius: '50%',
+              filter: 'blur(100px)', top: `${index * 30}%`,
+              left: index % 2 === 0 ? '-10%' : '60%',
+              animation: `float 20s ease-in-out infinite`,
+              animationDelay: `${index * 0.5}s`
+            }} />
+          ))}
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: '72rem', margin: '0 auto', padding: '32px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '2.25rem', fontWeight: '700', color: theme.onBackground }}>
+              Your Results
+            </h1>
+            <button
+              onClick={restart}
+              style={{ 
+                backgroundColor: theme.primary, color: theme.onPrimary,
+                boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)',
+                padding: '12px 24px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+            >
+              <RefreshCw size={20} />
+              Retake Quiz
+            </button>
+          </div>
+
+          <div style={{ 
+            backgroundColor: theme.elevation1, color: theme.onSurfaceVariant,
+            padding: '12px 24px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px'
+          }}>
+            <strong>{studentInfo.firstName} {studentInfo.lastName}</strong> • {studentInfo.buId} • {studentInfo.email}
+          </div>
+
+          <div style={{ display: 'grid', gap: '24px', marginBottom: '32px' }}>
+            {results.recommendations.map((rec, index) => (
+              <div key={rec.role} style={{
+                backgroundColor: theme.surface,
+                boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+                borderRadius: '24px', padding: '32px',
+                animation: `slideInUp 0.6s ease-out ${index * 0.15}s both`
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '24px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+                      <div style={{ position: 'relative' }}>
+                        <RoleCharacter 
+                          roleKey={rec.role} 
+                          isAnimated={true} 
+                          isHovered={true}
+                          size="large" 
+                        />
+                        {/* Rank badge */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '-8px',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          backgroundColor: theme.primary,
+                          color: theme.onPrimary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                          zIndex: 2
+                        }}>
+                          {rec.rank}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 style={{ 
+                          color: theme.onSurface, fontSize: '28px', fontWeight: '700', 
+                          marginBottom: '4px'
+                        }}>
+                          {rec.roleInfo.name}
+                        </h3>
+                        <p style={{ color: theme.primary, fontWeight: '600', fontSize: '18px' }}>
+                          {rec.score}% Match
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <p style={{ 
+                      color: theme.onSurfaceVariant, marginBottom: '16px', 
+                      fontSize: '18px', lineHeight: '1.6'
+                    }}>
+                      {rec.explanation}
+                    </p>
+                    
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {rec.roleInfo.skills.map(skill => (
+                        <span key={skill} style={{
+                          backgroundColor: theme.secondaryContainer,
+                          color: theme.onSecondaryContainer,
+                          padding: '8px 16px', borderRadius: '9999px',
+                          fontSize: '14px', fontWeight: '500'
+                        }}>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div style={{ position: 'relative', width: '120px', height: '120px', flexShrink: 0 }}>
+                    <svg viewBox="0 0 120 120" style={{ width: '120px', height: '120px', transform: 'rotate(-90deg)' }}>
+                      <circle cx="60" cy="60" r="45" stroke={theme.surfaceVariant} strokeWidth="10" fill="none" />
+                      <circle
+                        cx="60" cy="60" r="45" stroke={rec.roleInfo.color} strokeWidth="10" fill="none"
+                        strokeDasharray={`${2 * Math.PI * 45}`}
+                        strokeDashoffset={`${2 * Math.PI * 45 * (1 - rec.score / 100)}`}
+                        style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
+                      />
+                    </svg>
+                    <div style={{ 
+                      position: 'absolute', inset: 0, display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center',
+                      fontSize: '24px', fontWeight: '700', color: theme.onSurface
+                    }}>
+                      {rec.score}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ 
+            backgroundColor: theme.surface,
+            boxShadow: darkMode ? '0 10px 40px rgba(0, 0, 0, 0.5)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+            borderRadius: '24px', padding: '32px',
+            animation: 'slideInUp 0.6s ease-out 0.5s both'
+          }}>
+            <h3 style={{ 
+              color: theme.onSurface, fontSize: '24px', fontWeight: '700', 
+              marginBottom: '20px', textAlign: 'center'
+            }}>
+              Save & Share Your Results
+            </h3>
+            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <button onClick={exportToCSV} style={{ 
+                backgroundColor: theme.secondaryContainer, color: theme.onSecondaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
+                <Download size={20} />
+                Download CSV
+              </button>
+              <button onClick={exportToPDF} style={{ 
+                backgroundColor: theme.tertiaryContainer, color: theme.onTertiaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
+                <Download size={20} />
+                Download PDF
+              </button>
+              <button onClick={shareResults} style={{ 
+                backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                padding: '14px 28px', borderRadius: '9999px', fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', fontSize: '16px'
+              }}>
+                <Share2 size={20} />
+                Share Results
+              </button>
+            </div>
+          </div>
+
+          {shareNotification && (
+            <div style={{ 
+              backgroundColor: theme.primary, color: theme.onPrimary,
+              position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+              padding: '16px 24px', borderRadius: '12px', fontWeight: '600',
+              animation: 'slideUpIn 0.3s ease-out', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
+            }}>
+              {shareNotification}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes slideInUp {
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideUpIn {
+          from { transform: translateX(-50%) translateY(100%); opacity: 0; }
+          to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+
+  // Main render logic
+  if (currentPage === 'landing') return <LandingPage />;
+  if (currentPage === 'about') return <AboutPage />;
+  if (currentPage === 'studentInfo') return <StudentInfoPage />;
+  if (currentPage === 'quiz') return <QuizPage />;
+  if (currentPage === 'results' && results) return <ResultsPage />;
+  
+  return <LandingPage />;
 };
 
 export default RoleMatch;
