@@ -492,7 +492,7 @@ const RoleMatch = () => {
     });
 
     const sortedRoles = Object.entries(normalizedScores)
-      .filter(([_, score]) => score >= 20)
+      .filter(([, score]) => score >= 20)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
 
