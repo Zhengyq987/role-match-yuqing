@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
+import { Player } from '@lottiefiles/react-lottie-player';
+import uxAnimation from './animations/UX.json';
+import cmAnimation from './animations/CM.json';
+import designAnimation from './animations/System.json';
+import testerAnimation from './animations/Tester.json';
+import reAnimation from './animations/RE.json';
 
 const RoleMatch = () => {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -148,6 +154,16 @@ const RoleMatch = () => {
     }
   };
 
+  //characters animations
+  const roleAnimations = {
+    UX: uxAnimation,
+    CM: cmAnimation,
+    RE: reAnimation,
+    Design: designAnimation,
+    Test: testerAnimation,
+  };
+
+  
   // Questions data
   const questions = [
     {
@@ -2614,13 +2630,26 @@ const RoleMatch = () => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                       <div style={{ position: 'relative' }}>
-                        <RoleCharacter 
+                        {/* <RoleCharacter 
                           roleKey={rec.role} 
                           isAnimated={true} 
                           isHovered={true}
                           size="large" 
                           showSparkles={index === 0} // Only sparkles for #1 result
+                        /> */}
+                        <Player
+                          autoplay
+                          loop
+                          src={roleAnimations[rec.role]}
+                          style={{
+                            width: '200px',
+                            height: '200px',
+                            background: 'transparent', 
+                            borderRadius: '0px',        
+                            boxShadow: 'none'
+                          }}
                         />
+
                         {/* Enhanced rank badge with pulsing animation */}
                         <div style={{
                           position: 'absolute',
