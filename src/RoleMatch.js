@@ -742,18 +742,19 @@ const RoleMatch = () => {
               <ArrowRight size={20} />
             </button>
 
-            {/* Role Preview Section */}
+            {/* Role Preview Section - FIXED: Better alignment and spacing */}
             <div style={{ marginTop: '80px', marginBottom: '64px' }}>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '32px', color: theme.onSurface, textAlign: 'center' }}>
+              <h3 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '48px', color: theme.onSurface, textAlign: 'center' }}>
                 Discover Your Role Among
               </h3>
-              <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px' }}>
-                {/* Top row - 3 roles */}
+              <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px' }}>
+                {/* Top row - 3 roles - FIXED: Perfect centering */}
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'center', 
-                  gap: '24px', 
-                  marginBottom: '24px',
+                  alignItems: 'flex-start',
+                  gap: '40px', 
+                  marginBottom: '60px',
                   flexWrap: 'wrap'
                 }}>
                   {Object.entries(roles).slice(0, 3).map(([key, role]) => (
@@ -762,20 +763,20 @@ const RoleMatch = () => {
                       style={{ 
                         backgroundColor: theme.elevation1,
                         border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
-                        transform: hoveredRole === key ? 'scale(1.02)' : 'scale(1)',
+                        transform: hoveredRole === key ? 'scale(1.02) translateY(-5px)' : 'scale(1)',
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        padding: '28px', 
-                        borderRadius: '28px', 
+                        padding: '36px', 
+                        borderRadius: '32px', 
                         textAlign: 'center', 
                         cursor: 'pointer',
                         display: 'flex', 
                         flexDirection: 'column', 
                         alignItems: 'center',
-                        minWidth: '180px',
-                        maxWidth: '200px',
+                        width: '240px',
+                        height: '220px',
                         boxShadow: hoveredRole === key 
-                          ? `0 20px 60px ${role.color}30, 0 8px 32px rgba(0, 0, 0, 0.15)` 
-                          : '0 4px 16px rgba(0, 0, 0, 0.08)',
+                          ? `0 25px 70px ${role.color}40, 0 10px 35px rgba(0, 0, 0, 0.15)` 
+                          : '0 8px 30px rgba(0, 0, 0, 0.08)',
                         position: 'relative',
                         overflow: 'visible'
                       }}
@@ -790,52 +791,67 @@ const RoleMatch = () => {
                       />
                       <h4 style={{ 
                         color: theme.onSurface, 
-                        marginTop: '20px', 
+                        marginTop: '28px', 
                         fontWeight: '600',
-                        fontSize: '15px',
+                        fontSize: '16px',
                         lineHeight: '1.3',
                         transition: 'all 0.3s ease',
-                        transform: hoveredRole === key ? 'translateY(-2px)' : 'translateY(0)'
+                        transform: hoveredRole === key ? 'translateY(-3px)' : 'translateY(0)'
                       }}>
                         {role.name}
                       </h4>
                       
-                      {/* Hover tooltip */}
+                      {/* Hover tooltip - FIXED: Better positioning */}
                       {hoveredRole === key && (
                         <div style={{
                           position: 'absolute',
                           top: '100%',
                           left: '50%',
-                          transform: 'translateX(-50%) translateY(10px)',
+                          transform: 'translateX(-50%) translateY(15px)',
                           backgroundColor: theme.surface,
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                          width: '220px',
-                          zIndex: 10,
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          boxShadow: '0 15px 50px rgba(0, 0, 0, 0.25)',
+                          width: '300px',
+                          zIndex: 1000,
                           border: `2px solid ${role.color}`,
                           animation: 'tooltip-appear 0.3s ease-out'
                         }}>
                           <p style={{ 
                             color: theme.onSurface, 
-                            fontSize: '13px', 
-                            lineHeight: '1.4',
+                            fontSize: '14px', 
+                            lineHeight: '1.5',
                             margin: 0,
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            fontWeight: '500'
                           }}>
                             {role.description}
                           </p>
+                          
+                          {/* Tooltip arrow */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            borderBottom: `8px solid ${role.color}`
+                          }} />
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
                 
-                {/* Bottom row - 2 roles centered */}
+                {/* Bottom row - 2 roles centered - FIXED: Perfect spacing */}
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'center', 
-                  gap: '24px',
+                  alignItems: 'flex-start',
+                  gap: '80px',
                   flexWrap: 'wrap'
                 }}>
                   {Object.entries(roles).slice(3, 5).map(([key, role]) => (
@@ -844,20 +860,20 @@ const RoleMatch = () => {
                       style={{ 
                         backgroundColor: theme.elevation1,
                         border: hoveredRole === key ? `3px solid ${role.color}` : '3px solid transparent',
-                        transform: hoveredRole === key ? 'scale(1.02)' : 'scale(1)',
+                        transform: hoveredRole === key ? 'scale(1.02) translateY(-5px)' : 'scale(1)',
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        padding: '28px', 
-                        borderRadius: '28px', 
+                        padding: '36px', 
+                        borderRadius: '32px', 
                         textAlign: 'center', 
                         cursor: 'pointer',
                         display: 'flex', 
                         flexDirection: 'column', 
                         alignItems: 'center',
-                        minWidth: '180px',
-                        maxWidth: '200px',
+                        width: '240px',
+                        height: '220px',
                         boxShadow: hoveredRole === key 
-                          ? `0 20px 60px ${role.color}30, 0 8px 32px rgba(0, 0, 0, 0.15)` 
-                          : '0 4px 16px rgba(0, 0, 0, 0.08)',
+                          ? `0 25px 70px ${role.color}40, 0 10px 35px rgba(0, 0, 0, 0.15)` 
+                          : '0 8px 30px rgba(0, 0, 0, 0.08)',
                         position: 'relative',
                         overflow: 'visible'
                       }}
@@ -872,41 +888,55 @@ const RoleMatch = () => {
                       />
                       <h4 style={{ 
                         color: theme.onSurface, 
-                        marginTop: '20px', 
+                        marginTop: '28px', 
                         fontWeight: '600',
-                        fontSize: '15px',
+                        fontSize: '16px',
                         lineHeight: '1.3',
                         transition: 'all 0.3s ease',
-                        transform: hoveredRole === key ? 'translateY(-2px)' : 'translateY(0)'
+                        transform: hoveredRole === key ? 'translateY(-3px)' : 'translateY(0)'
                       }}>
                         {role.name}
                       </h4>
                       
-                      {/* Hover tooltip */}
+                      {/* Hover tooltip - FIXED: Position above for bottom row */}
                       {hoveredRole === key && (
                         <div style={{
                           position: 'absolute',
                           bottom: '100%',
                           left: '50%',
-                          transform: 'translateX(-50%) translateY(-10px)',
+                          transform: 'translateX(-50%) translateY(-15px)',
                           backgroundColor: theme.surface,
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                          width: '220px',
-                          zIndex: 10,
+                          padding: '16px 20px',
+                          borderRadius: '16px',
+                          boxShadow: '0 15px 50px rgba(0, 0, 0, 0.25)',
+                          width: '300px',
+                          zIndex: 1000,
                           border: `2px solid ${role.color}`,
                           animation: 'tooltip-appear 0.3s ease-out'
                         }}>
                           <p style={{ 
                             color: theme.onSurface, 
-                            fontSize: '13px', 
-                            lineHeight: '1.4',
+                            fontSize: '14px', 
+                            lineHeight: '1.5',
                             margin: 0,
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            fontWeight: '500'
                           }}>
                             {role.description}
                           </p>
+                          
+                          {/* Tooltip arrow pointing down */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            borderTop: `8px solid ${role.color}`
+                          }} />
                         </div>
                       )}
                     </div>
@@ -1066,6 +1096,12 @@ const RoleMatch = () => {
           66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
+        @keyframes float {
+          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
         @keyframes character-bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-15px); }
@@ -1130,6 +1166,39 @@ const RoleMatch = () => {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
         <div style={{ position: 'relative' }}>
+          {/* Navigation */}
+          <nav style={{ padding: '16px 24px', marginBottom: '16px' }}>
+            <div style={{ maxWidth: '84rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                onClick={() => setCurrentPage('landing')}
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  backgroundColor: theme.primaryContainer,
+                  color: theme.onPrimaryContainer,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <Home size={20} />
+                RoleMatch
+              </button>
+            </div>
+          </nav>
+
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
             <div style={{ 
               position: 'absolute', width: '400px', height: '400px', 
@@ -1535,11 +1604,14 @@ const RoleMatch = () => {
                         </div>
                       </button>
                       
-                      {/* Enhanced Character Animation */}
+                      {/* Enhanced Character Animation - FIXED: Better positioning */}
                       {selectedOption === option.roleKey && (
                         <div style={{
-                          position: 'absolute', right: '-120px', top: '50%',
-                          transform: 'translateY(-50%)', zIndex: 10,
+                          position: 'absolute', 
+                          right: '-140px', 
+                          top: '50%',
+                          transform: 'translateY(-50%)', 
+                          zIndex: 1000,
                           animation: 'character-entrance 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}>
                           <RoleCharacter 
@@ -1550,23 +1622,24 @@ const RoleMatch = () => {
                             showSparkles={true}
                           />
                           
-                          {/* Character speech bubble */}
+                          {/* Character speech bubble - FIXED: Better positioning */}
                           <div style={{
                             position: 'absolute',
-                            top: '-60px',
+                            top: '-70px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             backgroundColor: theme.surface,
-                            padding: '8px 12px',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                            padding: '12px 16px',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
                             border: `2px solid ${roles[option.roleKey].color}`,
-                            animation: 'speech-bubble 0.5s ease-out 0.3s both',
-                            whiteSpace: 'nowrap'
+                            animation: 'speech-bubble 0.5s ease-out 0.4s both',
+                            whiteSpace: 'nowrap',
+                            zIndex: 1001
                           }}>
                             <p style={{ 
                               color: theme.onSurface, 
-                              fontSize: '12px', 
+                              fontSize: '14px', 
                               fontWeight: '600',
                               margin: 0
                             }}>
