@@ -1796,6 +1796,29 @@ const RoleMatch = () => {
                 Start Assessment
                 <ArrowRight size={20} />
               </button>
+
+              <button
+                onClick={() => setCurrentPage('landing')}
+                style={{ 
+                  width: '100%', padding: '16px 24px', borderRadius: '9999px', fontWeight: '600', fontSize: '18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', marginTop: '32px',
+                  backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
+                }}
+              >
+                Return to RoleMatch Home Page
+                <ArrowRight size={20} />
+              </button>
+
             </div>
           </div>
         </div>
