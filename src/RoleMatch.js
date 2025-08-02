@@ -492,7 +492,7 @@ const RoleMatch = () => {
     });
 
     const sortedRoles = Object.entries(normalizedScores)
-      .filter(([, score]) => score >= 20)
+      .filter(([_, score]) => score >= 20)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
 
@@ -518,16 +518,16 @@ const RoleMatch = () => {
     return explanations[role] || "Based on your responses, this role aligns well with your skills and interests.";
   };
 
-  // Get enhanced personality-based messages for speech bubbles
+  // Get personality-based messages for speech bubbles
   const getPersonalityMessage = (roleKey) => {
     const messages = {
-      RE: "Perfect analysis! 📋✨💯",
-      CM: "Great organization! 🗂️⚡🎯", 
-      Design: "Brilliant logic! 🧠💫🚀",
-      UX: "Creative genius! 🎨🌟💎",
-      Test: "Sharp detective! 🔍💎🎉"
+      RE: "Perfect analysis! 📋✨",
+      CM: "Great organization! 🗂️⚡",
+      Design: "Brilliant logic! 🧠💫",
+      UX: "Creative genius! 🎨🌟",
+      Test: "Sharp detective! 🔍💎"
     };
-    return messages[roleKey] || "Amazing choice! 🎊✨🌟";
+    return messages[roleKey] || "Great choice! 🎉";
   };
 
   const handleAnswer = (answer, option) => {
@@ -539,7 +539,6 @@ const RoleMatch = () => {
       setAnswers({ ...answers, [question.id]: answer });
       setSelectedOption(option.roleKey);
       
-      // Enhanced timing for single options to match multiple choice brightness
       setTimeout(() => {
         setSelectedOption(null);
         if (currentQuestion < questions.length - 1) {
@@ -548,7 +547,7 @@ const RoleMatch = () => {
           submitAnswers();
         }
         setIsAnimating(false);
-      }, 2000); // Increased from 1500ms to match multiple choice timing
+      }, 1500);
     }
   };
 
@@ -566,9 +565,8 @@ const RoleMatch = () => {
         ...answers,
         [question.id]: [...currentAnswers, optionIndex]
       });
-      // Enhanced animation timing for multiple choice
       setSelectedOption(option.roleKey);
-      setTimeout(() => setSelectedOption(null), 2000); // Increased to match single choice
+      setTimeout(() => setSelectedOption(null), 1000);
     }
     setShowWarning(false);
   };
@@ -1270,84 +1268,44 @@ const RoleMatch = () => {
           }
         }
         
-        /* Enhanced ring and glow animations with more brightness */
-        @keyframes personality-spin-bright {
+        /* Enhanced ring and glow animations */
+        @keyframes personality-spin {
           0% { 
             transform: rotate(0deg); 
-            opacity: 0.8; 
-            filter: blur(0px) brightness(1);
+            opacity: 0.6; 
+            filter: blur(0px);
           }
           50% { 
             opacity: 1; 
-            filter: blur(2px) brightness(1.5);
+            filter: blur(1px);
           }
           100% { 
             transform: rotate(360deg); 
-            opacity: 0.8;
-            filter: blur(0px) brightness(1);
+            opacity: 0.6;
+            filter: blur(0px);
           }
         }
         
-        @keyframes glow-rotate-bright {
+        @keyframes glow-rotate {
           0% { 
             transform: rotate(0deg) scale(1); 
-            opacity: 0.8;
+            opacity: 0.7;
           }
           25% { 
-            transform: rotate(90deg) scale(1.15); 
+            transform: rotate(90deg) scale(1.1); 
             opacity: 1;
           }
           50% { 
-            transform: rotate(180deg) scale(1.1); 
-            opacity: 0.9;
+            transform: rotate(180deg) scale(1.05); 
+            opacity: 0.8;
           }
           75% { 
-            transform: rotate(270deg) scale(1.2); 
+            transform: rotate(270deg) scale(1.15); 
             opacity: 1;
           }
           100% { 
             transform: rotate(360deg) scale(1); 
-            opacity: 0.8;
-          }
-        }
-        
-        /* Bright pulse effect for character selections */
-        @keyframes bright-pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.3);
-          }
-        }
-        
-        /* Enhanced character entrance with more drama */
-        @keyframes character-entrance {
-          0% {
-            opacity: 0;
-            transform: translateY(-50%) scale(0.2) rotate(-30deg);
-          }
-          25% {
             opacity: 0.7;
-            transform: translateY(-50%) scale(1.6) rotate(20deg);
-          }
-          50% {
-            opacity: 0.9;
-            transform: translateY(-50%) scale(0.7) rotate(-15deg);
-          }
-          75% {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.3) rotate(8deg);
-          }
-          90% {
-            opacity: 1;
-            transform: translateY(-50%) scale(0.9) rotate(-4deg);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(-50%) scale(1) rotate(0deg);
           }
         }
         
@@ -1439,48 +1397,10 @@ const RoleMatch = () => {
           animation-delay: 2s;
         }
         
-        .sparkle-7 {
-          bottom: 10%;
-          left: 80%;
-          animation-delay: 3s;
-        }
-        
-        .sparkle-8 {
-          top: 80%;
-          right: 80%;
-          animation-delay: 3.5s;
-        }
-        
-        /* Enhanced sparkle animations - BRIGHTER */
-        @keyframes sparkle-float {
-          0%, 100% {
-            opacity: 0;
-            transform: translateY(0) rotate(0deg) scale(0.2);
-          }
-          15% {
-            opacity: 0.8;
-            transform: translateY(-8px) rotate(45deg) scale(0.9);
-          }
-          30% {
-            opacity: 1;
-            transform: translateY(-18px) rotate(108deg) scale(1.6);
-          }
-          45% {
-            opacity: 1;
-            transform: translateY(-28px) rotate(180deg) scale(2);
-          }
-          60% {
-            opacity: 0.9;
-            transform: translateY(-35px) rotate(252deg) scale(1.8);
-          }
-          75% {
-            opacity: 0.7;
-            transform: translateY(-25px) rotate(324deg) scale(1.3);
-          }
-          90% {
-            opacity: 0.4;
-            transform: translateY(-15px) rotate(396deg) scale(0.8);
-          }
+        .sparkle-6 {
+          top: 20%;
+          right: -25px;
+          animation-delay: 2.5s;
         }
         
         /* Personality indicator dots */
@@ -1543,39 +1463,28 @@ const RoleMatch = () => {
           animation-delay: 1.3s;
         }
         
-        .particle-4 {
-          top: 10%;
-          right: 30%;
-          animation-delay: 3.2s;
+        .particle-3 {
+          bottom: 30%;
+          left: 70%;
+          animation-delay: 2.6s;
         }
         
-        .particle-5 {
-          bottom: 10%;
-          right: 20%;
-          animation-delay: 3.8s;
-        }
-        
-        /* Enhanced particle animation - BRIGHTER */
         @keyframes particle-float {
           0%, 100% {
             opacity: 0;
-            transform: translateY(0) scale(0.5);
+            transform: translateY(0) scale(1);
           }
-          20% {
-            opacity: 0.8;
-            transform: translateY(-20px) scale(2);
+          25% {
+            opacity: 0.6;
+            transform: translateY(-15px) scale(1.5);
           }
-          40% {
+          50% {
             opacity: 1;
-            transform: translateY(-35px) scale(3);
+            transform: translateY(-25px) scale(2);
           }
-          60% {
-            opacity: 0.9;
-            transform: translateY(-45px) scale(2.5);
-          }
-          80% {
-            opacity: 0.5;
-            transform: translateY(-55px) scale(1.5);
+          75% {
+            opacity: 0.4;
+            transform: translateY(-35px) scale(1.2);
           }
         }
         
@@ -1651,6 +1560,7 @@ const RoleMatch = () => {
   );
 
   // Student Info Page Component
+  
   const StudentInfoPage = () => {
     const [localInfo, setLocalInfo] = useState(studentInfo);
     
@@ -2075,93 +1985,47 @@ const RoleMatch = () => {
                           backgroundColor: isSelected ? theme.primaryContainer : theme.elevation1,
                           color: isSelected ? theme.onPrimaryContainer : theme.onSurfaceVariant,
                           borderColor: isSelected ? theme.primary : 'transparent',
-                          boxShadow: isSelected 
-                            ? `0 12px 40px rgba(0, 100, 149, 0.3), 0 0 30px ${theme.primary}20` 
-                            : '0 6px 20px rgba(0, 0, 0, 0.08)',
-                          width: '100%', textAlign: 'left', padding: '24px 28px',
-                          borderRadius: '20px', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                          border: '3px solid', cursor: 'pointer',
-                          fontSize: '16px', fontWeight: '600',
-                          transform: isSelected ? 'scale(1.03) translateY(-2px)' : 'scale(1)',
-                          position: 'relative',
-                          overflow: 'hidden'
+                          boxShadow: isSelected ? '0 8px 32px rgba(0, 100, 149, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.05)',
+                          width: '100%', textAlign: 'left', padding: '20px 24px',
+                          borderRadius: '16px', transition: 'all 0.3s ease',
+                          border: '2px solid', cursor: 'pointer',
+                          fontSize: '16px', fontWeight: '500',
+                          transform: isSelected ? 'scale(1.02)' : 'scale(1)'
                         }}
                         onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.target.style.transform = 'scale(1.02) translateY(-2px)';
-                            e.target.style.boxShadow = `0 10px 30px rgba(0, 100, 149, 0.2), 0 0 25px ${theme.primary}15`;
-                            e.target.style.borderColor = `${theme.primary}60`;
-                          }
+                          if (!isSelected) e.target.style.transform = 'scale(1.01)';
                         }}
                         onMouseLeave={(e) => {
-                          e.target.style.transform = isSelected ? 'scale(1.03) translateY(-2px)' : 'scale(1)';
-                          e.target.style.boxShadow = isSelected 
-                            ? `0 12px 40px rgba(0, 100, 149, 0.3), 0 0 30px ${theme.primary}20` 
-                            : '0 6px 20px rgba(0, 0, 0, 0.08)';
-                          e.target.style.borderColor = isSelected ? theme.primary : 'transparent';
+                          e.target.style.transform = isSelected ? 'scale(1.02)' : 'scale(1)';
                         }}
                       >
-                        {/* Selection glow effect */}
-                        {isSelected && (
-                          <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            borderRadius: '20px',
-                            background: `linear-gradient(45deg, ${theme.primary}10, transparent, ${theme.primary}15)`,
-                            animation: 'selection-glow 2s ease-in-out infinite',
-                            zIndex: 0
-                          }} />
-                        )}
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative', zIndex: 1 }}>
-                          {/* Enhanced checkbox glow for multiple choice */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                           {currentQ.type === 'multiple' && (
                             <div style={{ 
-                              width: '28px', height: '28px', borderRadius: '10px',
-                              border: '3px solid', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: '24px', height: '24px', borderRadius: '8px',
+                              border: '2px solid', display: 'flex', alignItems: 'center', justifyContent: 'center',
                               backgroundColor: isSelected ? theme.primary : 'transparent',
                               borderColor: isSelected ? theme.primary : theme.outline,
-                              flexShrink: 0,
-                              boxShadow: isSelected ? `0 0 25px ${theme.primary}60, 0 4px 15px rgba(0, 100, 149, 0.3)` : 'none',
-                              transition: 'all 0.4s ease',
-                              animation: isSelected ? 'checkbox-glow 2s ease-in-out infinite' : 'none'
+                              flexShrink: 0
                             }}>
-                              {isSelected && <CheckCircle2 size={18} style={{ color: theme.onPrimary, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />}
+                              {isSelected && <CheckCircle2 size={16} style={{ color: theme.onPrimary }} />}
                             </div>
                           )}
-                          
-                          {/* Bright indicator for single choice */}
-                          {currentQ.type === 'single' && isSelected && (
-                            <div style={{
-                              width: '28px', height: '28px', borderRadius: '50%',
-                              backgroundColor: theme.primary,
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              flexShrink: 0,
-                              boxShadow: `0 0 25px ${theme.primary}60, 0 4px 15px rgba(0, 100, 149, 0.3)`,
-                              animation: 'checkbox-glow 2s ease-in-out infinite'
-                            }}>
-                              <div style={{
-                                width: '12px', height: '12px', borderRadius: '50%',
-                                backgroundColor: theme.onPrimary,
-                                boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)'
-                              }} />
-                            </div>
-                          )}
-                          <span style={{ flex: 1, lineHeight: '1.6' }}>
+                          <span style={{ flex: 1, lineHeight: '1.5' }}>
                             {option.text}
                           </span>
                         </div>
                       </button>
                       
-                      {/* Enhanced Character Animation - SAME FOR BOTH SINGLE & MULTIPLE */}
+                      {/* Enhanced Character Animation with Speech Bubble */}
                       {selectedOption === option.roleKey && (
                         <div style={{
                           position: 'absolute', 
-                          right: '-180px', 
+                          right: '-160px', 
                           top: '50%',
                           transform: 'translateY(-50%)', 
                           zIndex: 1000,
-                          animation: 'character-entrance 2s cubic-bezier(0.4, 0, 0.2, 1)'
+                          animation: 'character-entrance 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}>
                           <RoleCharacter 
                             roleKey={option.roleKey} 
@@ -2171,82 +2035,44 @@ const RoleMatch = () => {
                             showSparkles={true}
                           />
                           
-                          {/* Bright celebration effects for ALL selections */}
-                          <div className="celebration-burst" style={{
-                            position: 'absolute',
-                            inset: '-30px',
-                            pointerEvents: 'none',
-                            animation: 'celebration-burst 2s ease-out'
-                          }}>
-                            <div className="burst-particle burst-1" style={{ backgroundColor: roles[option.roleKey].color }}>🎉</div>
-                            <div className="burst-particle burst-2" style={{ backgroundColor: roles[option.roleKey].color }}>✨</div>
-                            <div className="burst-particle burst-3" style={{ backgroundColor: roles[option.roleKey].color }}>🌟</div>
-                            <div className="burst-particle burst-4" style={{ backgroundColor: roles[option.roleKey].color }}>💫</div>
-                            <div className="burst-particle burst-5" style={{ backgroundColor: roles[option.roleKey].color }}>⭐</div>
-                            <div className="burst-particle burst-6" style={{ backgroundColor: roles[option.roleKey].color }}>🎊</div>
-                          </div>
-                          
-                          {/* Enhanced speech bubble with brighter styling */}
+                          {/* Enhanced speech bubble with personality-based messages */}
                           <div style={{
                             position: 'absolute',
-                            top: '-90px',
+                            top: '-80px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             backgroundColor: theme.surface,
-                            padding: '20px 24px',
-                            borderRadius: '24px',
-                            boxShadow: `0 15px 50px rgba(0, 0, 0, 0.4), 0 0 30px ${roles[option.roleKey].color}60, 0 0 60px ${roles[option.roleKey].color}30`,
-                            border: `4px solid ${roles[option.roleKey].color}`,
-                            animation: 'speech-bubble-bright 1s ease-out 0.6s both',
+                            padding: '16px 20px',
+                            borderRadius: '20px',
+                            boxShadow: `0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px ${roles[option.roleKey].color}40`,
+                            border: `3px solid ${roles[option.roleKey].color}`,
+                            animation: 'speech-bubble 0.8s ease-out 0.5s both',
                             whiteSpace: 'nowrap',
                             zIndex: 1001
                           }}>
                             <p style={{ 
                               color: theme.onSurface, 
-                              fontSize: '18px', 
-                              fontWeight: '800',
+                              fontSize: '16px', 
+                              fontWeight: '700',
                               margin: 0,
-                              textShadow: `0 2px 4px rgba(0,0,0,0.2), 0 0 10px ${roles[option.roleKey].color}40`,
-                              background: `linear-gradient(45deg, ${theme.onSurface}, ${roles[option.roleKey].color})`,
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text'
+                              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
                             }}>
                               {getPersonalityMessage(option.roleKey)}
                             </p>
-                            {/* Enhanced speech bubble arrow with glow */}
+                            {/* Enhanced speech bubble arrow */}
                             <div style={{
                               position: 'absolute',
-                              bottom: '-16px',
+                              bottom: '-12px',
                               left: '50%',
                               transform: 'translateX(-50%)',
                               width: 0,
                               height: 0,
-                              borderLeft: '16px solid transparent',
-                              borderRight: '16px solid transparent',
-                              borderTop: `16px solid ${roles[option.roleKey].color}`,
-                              filter: `drop-shadow(0 4px 8px rgba(0,0,0,0.3)) drop-shadow(0 0 15px ${roles[option.roleKey].color}60)`
-                            }} />
-                            
-                            {/* Speech bubble glow ring */}
-                            <div style={{
-                              position: 'absolute',
-                              inset: '-8px',
-                              borderRadius: '24px',
-                              background: `linear-gradient(45deg, ${roles[option.roleKey].color}30, transparent, ${roles[option.roleKey].color}30)`,
-                              animation: 'bubble-glow 2s ease-in-out infinite',
-                              zIndex: -1
+                              borderLeft: '12px solid transparent',
+                              borderRight: '12px solid transparent',
+                              borderTop: `12px solid ${roles[option.roleKey].color}`,
+                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                             }} />
                           </div>
-                          
-                          {/* Success pulse ring around character */}
-                          <div style={{
-                            position: 'absolute',
-                            inset: '-40px',
-                            borderRadius: '50%',
-                            border: `6px solid ${roles[option.roleKey].color}40`,
-                            animation: 'success-pulse 2s ease-out'
-                          }} />
                         </div>
                       )}
                     </div>
@@ -2319,146 +2145,26 @@ const RoleMatch = () => {
 
         <style jsx>{`
           /* Enhanced quiz page animations */
-          /* Enhanced celebration burst animation for ALL selections */
-          @keyframes celebration-burst {
+          @keyframes character-entrance {
             0% {
               opacity: 0;
-              transform: scale(0);
-            }
-            20% {
-              opacity: 1;
-              transform: scale(1.2);
-            }
-            100% {
-              opacity: 0;
-              transform: scale(2);
-            }
-          }
-          
-          /* Burst particles animation */
-          .burst-particle {
-            position: absolute;
-            font-size: 20px;
-            font-weight: bold;
-            animation: burst-particle-float 2s ease-out;
-          }
-          
-          .burst-1 {
-            top: -20px;
-            left: 50%;
-            animation-delay: 0s;
-          }
-          
-          .burst-2 {
-            top: 20%;
-            right: -20px;
-            animation-delay: 0.2s;
-          }
-          
-          .burst-3 {
-            bottom: 20%;
-            right: -15px;
-            animation-delay: 0.4s;
-          }
-          
-          .burst-4 {
-            bottom: -15px;
-            left: 50%;
-            animation-delay: 0.6s;
-          }
-          
-          .burst-5 {
-            bottom: 20%;
-            left: -20px;
-            animation-delay: 0.8s;
-          }
-          
-          .burst-6 {
-            top: 20%;
-            left: -15px;
-            animation-delay: 1s;
-          }
-          
-          @keyframes burst-particle-float {
-            0% {
-              opacity: 0;
-              transform: translate(0, 0) scale(0) rotate(0deg);
-            }
-            20% {
-              opacity: 1;
-              transform: translate(0, -10px) scale(1.5) rotate(180deg);
-            }
-            80% {
-              opacity: 0.8;
-              transform: translate(0, -30px) scale(2) rotate(720deg);
-            }
-            100% {
-              opacity: 0;
-              transform: translate(0, -50px) scale(0.5) rotate(1080deg);
-            }
-          }
-          
-          /* Enhanced speech bubble animation for brighter effect */
-          @keyframes speech-bubble-bright {
-            0% {
-              opacity: 0;
-              transform: translateX(-50%) scale(0.3) translateY(40px) rotate(-15deg);
+              transform: translateY(-50%) scale(0.3) rotate(-20deg);
             }
             30% {
               opacity: 0.8;
-              transform: translateX(-50%) scale(1.4) translateY(-15px) rotate(10deg);
+              transform: translateY(-50%) scale(1.4) rotate(15deg);
             }
             60% {
               opacity: 1;
-              transform: translateX(-50%) scale(0.8) translateY(8px) rotate(-5deg);
+              transform: translateY(-50%) scale(0.8) rotate(-8deg);
             }
             80% {
               opacity: 1;
-              transform: translateX(-50%) scale(1.1) translateY(-3px) rotate(3deg);
+              transform: translateY(-50%) scale(1.2) rotate(5deg);
             }
             100% {
               opacity: 1;
-              transform: translateX(-50%) scale(1) translateY(0) rotate(0deg);
-            }
-          }
-          
-          /* Bubble glow animation */
-          @keyframes bubble-glow {
-            0%, 100% {
-              opacity: 0.3;
-              transform: rotate(0deg) scale(1);
-            }
-            50% {
-              opacity: 0.8;
-              transform: rotate(180deg) scale(1.1);
-            }
-          }
-          
-          /* Success pulse ring animation */
-          @keyframes success-pulse {
-            0% {
-              opacity: 0;
-              transform: scale(0.8);
-            }
-            20% {
-              opacity: 0.8;
-              transform: scale(1.2);
-            }
-            40% {
-              opacity: 0.6;
-              transform: scale(1.5);
-            }
-            60% {
-              opacity: 0.4;
-              transform: scale(1.8);
-            }
-            80% {
-              opacity: 0.2;
-              transform: scale(2.1);
-            }
-            100% {
-              opacity: 0;
-              transform: scale(2.5);
+              transform: translateY(-50%) scale(1) rotate(0deg);
             }
           }
           
@@ -2696,38 +2402,6 @@ const RoleMatch = () => {
             top: 20%;
             right: -25px;
             animation-delay: 2.5s;
-          }
-          
-          .sparkle-7 {
-            bottom: 15%;
-            left: 85%;
-            animation-delay: 3s;
-          }
-          
-          .sparkle-8 {
-            top: 85%;
-            right: 85%;
-            animation-delay: 3.5s;
-          }
-          
-          /* Selection glow animation for option buttons */
-          @keyframes selection-glow {
-            0%, 100% {
-              opacity: 0.3;
-            }
-            50% {
-              opacity: 0.8;
-            }
-          }
-          
-          /* Checkbox glow animation for both single and multiple choice */
-          @keyframes checkbox-glow {
-            0%, 100% {
-              box-shadow: 0 0 25px rgba(0, 100, 149, 0.6), 0 4px 15px rgba(0, 100, 149, 0.3);
-            }
-            50% {
-              box-shadow: 0 0 35px rgba(0, 100, 149, 0.8), 0 6px 20px rgba(0, 100, 149, 0.5);
-            }
           }
           
           @keyframes sparkle-float {
