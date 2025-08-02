@@ -310,9 +310,9 @@ const RoleMatch = () => {
   // Enhanced Role Character Component with 16personalities-style animations
   const RoleCharacter = ({ roleKey, isAnimated = false, size = 'medium', showSparkles = false, isHovered = false }) => {
     const sizeMap = {
-      small: { w: 48, h: 48, icon: 20 },
-      medium: { w: 96, h: 96, icon: 32 },
-      large: { w: 128, h: 128, icon: 40 }
+      small: { w: 60, h: 60, icon: 24 },
+      medium: { w: 120, h: 120, icon: 40 },
+      large: { w: 160, h: 160, icon: 48 }
     };
 
     const dimensions = sizeMap[size];
@@ -391,13 +391,15 @@ const RoleMatch = () => {
             overflow: 'visible'
           }}
         >
-          {/* Character icon */}
+          {/* Character icon - FIXED: Better sizing */}
           {React.cloneElement(roles[roleKey].icon, { 
             size: dimensions.icon,
             style: { 
               color: '#ffffff',
               filter: isHovered ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              width: `${dimensions.icon}px`,
+              height: `${dimensions.icon}px`
             }
           })}
 
@@ -490,7 +492,7 @@ const RoleMatch = () => {
     });
 
     const sortedRoles = Object.entries(normalizedScores)
-      .filter(([_, score]) => score >= 20)
+      .filter(([, score]) => score >= 20)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
 
@@ -514,6 +516,18 @@ const RoleMatch = () => {
       Test: "Your detail-oriented nature and quality-focused approach make you an excellent tester. You have a knack for finding issues others might miss."
     };
     return explanations[role] || "Based on your responses, this role aligns well with your skills and interests.";
+  };
+
+  // Get personality-based messages for speech bubbles
+  const getPersonalityMessage = (roleKey) => {
+    const messages = {
+      RE: "Perfect analysis! 📋✨",
+      CM: "Great organization! 🗂️⚡",
+      Design: "Brilliant logic! 🧠💫",
+      UX: "Creative genius! 🎨🌟",
+      Test: "Sharp detective! 🔍💎"
+    };
+    return messages[roleKey] || "Great choice! 🎉";
   };
 
   const handleAnswer = (answer, option) => {
@@ -1090,31 +1104,463 @@ const RoleMatch = () => {
         
         * { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
         
+        /* Enhanced background animations */
         @keyframes float {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          33% { transform: translate(30px, -30px) rotate(120deg); }
-          66% { transform: translate(-20px, 20px) rotate(240deg); }
+          0%, 100% { 
+            transform: translate(0px, 0px) rotate(0deg); 
+          }
+          33% { 
+            transform: translate(40px, -40px) rotate(120deg); 
+          }
+          66% { 
+            transform: translate(-30px, 30px) rotate(240deg); 
+          }
         }
         
-        @keyframes float {
-          0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-          33% { transform: translate(30px, -30px) rotate(120deg); }
-          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        /* Enhanced character entrance animation */
+        @keyframes character-entrance {
+          0% {
+            opacity: 0;
+            transform: translateY(-50%) scale(0.3) rotate(-20deg);
+          }
+          30% {
+            opacity: 0.8;
+            transform: translateY(-50%) scale(1.4) rotate(15deg);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(-50%) scale(0.8) rotate(-8deg);
+          }
+          80% {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.2) rotate(5deg);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(-50%) scale(1) rotate(0deg);
+          }
         }
         
+        /* Enhanced speech bubble animation */
+        @keyframes speech-bubble {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.4) translateY(30px) rotate(-10deg);
+          }
+          40% {
+            opacity: 0.9;
+            transform: translateX(-50%) scale(1.3) translateY(-10px) rotate(5deg);
+          }
+          70% {
+            opacity: 1;
+            transform: translateX(-50%) scale(0.9) translateY(5px) rotate(-2deg);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1) translateY(0) rotate(0deg);
+          }
+        }
+        
+        /* Enhanced warning shake */
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) rotate(-1deg); }
+          20%, 40%, 60%, 80% { transform: translateX(5px) rotate(1deg); }
+        }
+        
+        /* Personality-based character animations */
+        @keyframes character-think {
+          0%, 100% { 
+            transform: translateY(0) rotate(0deg) scale(1); 
+          }
+          25% { 
+            transform: translateY(-12px) rotate(-4deg) scale(1.03); 
+          }
+          50% { 
+            transform: translateY(-18px) rotate(0deg) scale(1.08); 
+          }
+          75% { 
+            transform: translateY(-8px) rotate(4deg) scale(1.03); 
+          }
+        }
+        
+        @keyframes character-organize {
+          0%, 100% { 
+            transform: translateY(0) scale(1) rotate(0deg); 
+          }
+          20% { 
+            transform: translateY(-6px) scale(1.04) rotate(-2deg); 
+          }
+          40% { 
+            transform: translateY(-12px) scale(1.08) rotate(2deg); 
+          }
+          60% { 
+            transform: translateY(-15px) scale(1.12) rotate(-1deg); 
+          }
+          80% { 
+            transform: translateY(-8px) scale(1.05) rotate(1deg); 
+          }
+        }
+        
+        @keyframes character-create-logic {
+          0%, 100% { 
+            transform: translateY(0) rotate(0deg) scale(1); 
+          }
+          16% { 
+            transform: translateY(-15px) rotate(-8deg) scale(1.06); 
+          }
+          33% { 
+            transform: translateY(-22px) rotate(12deg) scale(1.12); 
+          }
+          50% { 
+            transform: translateY(-25px) rotate(-10deg) scale(1.15); 
+          }
+          66% { 
+            transform: translateY(-18px) rotate(6deg) scale(1.1); 
+          }
+          83% { 
+            transform: translateY(-10px) rotate(-3deg) scale(1.05); 
+          }
+        }
+        
+        @keyframes character-create {
+          0%, 100% { 
+            transform: translateY(0) rotate(0deg) scale(1); 
+          }
+          12% { 
+            transform: translateY(-18px) rotate(-12deg) scale(1.1); 
+          }
+          25% { 
+            transform: translateY(-28px) rotate(15deg) scale(1.18); 
+          }
+          37% { 
+            transform: translateY(-35px) rotate(-18deg) scale(1.22); 
+          }
+          50% { 
+            transform: translateY(-32px) rotate(10deg) scale(1.25); 
+          }
+          62% { 
+            transform: translateY(-25px) rotate(-8deg) scale(1.15); 
+          }
+          75% { 
+            transform: translateY(-15px) rotate(5deg) scale(1.08); 
+          }
+          87% { 
+            transform: translateY(-8px) rotate(-2deg) scale(1.03); 
+          }
+        }
+        
+        @keyframes character-investigate {
+          0%, 100% { 
+            transform: translateY(0) scale(1) rotate(0deg); 
+          }
+          20% { 
+            transform: translateY(-8px) scale(1.08) rotate(-3deg); 
+          }
+          40% { 
+            transform: translateY(-16px) scale(1.15) rotate(3deg); 
+          }
+          60% { 
+            transform: translateY(-20px) scale(1.18) rotate(-2deg); 
+          }
+          80% { 
+            transform: translateY(-12px) scale(1.1) rotate(2deg); 
+          }
+        }
+        
+        /* Enhanced ring and glow animations */
+        @keyframes personality-spin {
+          0% { 
+            transform: rotate(0deg); 
+            opacity: 0.6; 
+            filter: blur(0px);
+          }
+          50% { 
+            opacity: 1; 
+            filter: blur(1px);
+          }
+          100% { 
+            transform: rotate(360deg); 
+            opacity: 0.6;
+            filter: blur(0px);
+          }
+        }
+        
+        @keyframes glow-rotate {
+          0% { 
+            transform: rotate(0deg) scale(1); 
+            opacity: 0.7;
+          }
+          25% { 
+            transform: rotate(90deg) scale(1.1); 
+            opacity: 1;
+          }
+          50% { 
+            transform: rotate(180deg) scale(1.05); 
+            opacity: 0.8;
+          }
+          75% { 
+            transform: rotate(270deg) scale(1.15); 
+            opacity: 1;
+          }
+          100% { 
+            transform: rotate(360deg) scale(1); 
+            opacity: 0.7;
+          }
+        }
+        
+        /* Enhanced tooltip animation */
+        @keyframes tooltip-appear {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.7) translateY(20px) rotate(-5deg);
+          }
+          60% {
+            opacity: 0.9;
+            transform: translateX(-50%) scale(1.1) translateY(-5px) rotate(2deg);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) scale(1) translateY(0) rotate(0deg);
+          }
+        }
+        
+        /* Enhanced sparkle animations */
+        @keyframes sparkle-float {
+          0%, 100% {
+            opacity: 0;
+            transform: translateY(0) rotate(0deg) scale(0.3);
+          }
+          20% {
+            opacity: 0.7;
+            transform: translateY(-12px) rotate(72deg) scale(0.8);
+          }
+          40% {
+            opacity: 1;
+            transform: translateY(-25px) rotate(144deg) scale(1.4);
+          }
+          60% {
+            opacity: 0.9;
+            transform: translateY(-30px) rotate(216deg) scale(1.6);
+          }
+          80% {
+            opacity: 0.6;
+            transform: translateY(-20px) rotate(288deg) scale(1.2);
+          }
+        }
+        
+        /* Character sparkle class */
+        .character-sparkle {
+          animation: character-bounce 1.5s ease-in-out infinite;
+        }
+        
+        .sparkles-container {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+        
+        .sparkle {
+          position: absolute;
+          animation: sparkle-float 3s ease-in-out infinite;
+          font-weight: bold;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+        
+        .sparkle-1 {
+          top: -25px;
+          right: -25px;
+          animation-delay: 0s;
+        }
+        
+        .sparkle-2 {
+          bottom: -25px;
+          left: -25px;
+          animation-delay: 0.5s;
+        }
+        
+        .sparkle-3 {
+          top: 50%;
+          left: -30px;
+          animation-delay: 1s;
+        }
+        
+        .sparkle-4 {
+          top: -20px;
+          left: 50%;
+          animation-delay: 1.5s;
+        }
+        
+        .sparkle-5 {
+          bottom: -20px;
+          right: 50%;
+          animation-delay: 2s;
+        }
+        
+        .sparkle-6 {
+          top: 20%;
+          right: -25px;
+          animation-delay: 2.5s;
+        }
+        
+        /* Personality indicator dots */
+        .personality-dots {
+          position: absolute;
+          bottom: -40px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 8px;
+        }
+        
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          animation: dot-pulse 2s ease-in-out infinite;
+          box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+        }
+        
+        .dot-1 { animation-delay: 0s; }
+        .dot-2 { animation-delay: 0.4s; }
+        .dot-3 { animation-delay: 0.8s; }
+        
+        @keyframes dot-pulse {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.8);
+          }
+        }
+        
+        /* Floating personality particles */
+        .personality-particles {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+        
+        .particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          animation: particle-float 4s ease-in-out infinite;
+        }
+        
+        .particle-1 {
+          top: 20%;
+          left: 20%;
+          animation-delay: 0s;
+        }
+        
+        .particle-2 {
+          top: 60%;
+          right: 25%;
+          animation-delay: 1.3s;
+        }
+        
+        .particle-3 {
+          bottom: 30%;
+          left: 70%;
+          animation-delay: 2.6s;
+        }
+        
+        @keyframes particle-float {
+          0%, 100% {
+            opacity: 0;
+            transform: translateY(0) scale(1);
+          }
+          25% {
+            opacity: 0.6;
+            transform: translateY(-15px) scale(1.5);
+          }
+          50% {
+            opacity: 1;
+            transform: translateY(-25px) scale(2);
+          }
+          75% {
+            opacity: 0.4;
+            transform: translateY(-35px) scale(1.2);
+          }
+        }
+        
+        /* Character-specific animation classes */
+        .character-think {
+          animation: character-think 3s ease-in-out infinite;
+        }
+        
+        .character-organize {
+          animation: character-organize 2.5s ease-in-out infinite;
+        }
+        
+        .character-create-logic {
+          animation: character-create-logic 4s ease-in-out infinite;
+        }
+        
+        .character-create {
+          animation: character-create 4.5s ease-in-out infinite;
+        }
+        
+        .character-investigate {
+          animation: character-investigate 3.2s ease-in-out infinite;
+        }
+        
+        /* Enhanced bounce animation */
         @keyframes character-bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-15px); }
+          0%, 100% { 
+            transform: translateY(0) scale(1); 
+          }
+          50% { 
+            transform: translateY(-20px) scale(1.05); 
+          }
         }
         
         .character-bounce {
-          animation: character-bounce 0.8s ease-in-out infinite;
+          animation: character-bounce 1.2s ease-in-out infinite;
+        }
+        
+        /* Page transition animations */
+        @keyframes slideInUp {
+          from { 
+            transform: translateY(40px); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateY(0); 
+            opacity: 1; 
+          }
+        }
+        
+        @keyframes slideUpIn {
+          from { 
+            transform: translateX(-50%) translateY(100%); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateX(-50%) translateY(0); 
+            opacity: 1; 
+          }
+        }
+        
+        /* Hover effects for cards */
+        @keyframes card-glow {
+          0%, 100% {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+          }
+          50% {
+            box-shadow: 0 25px 70px rgba(var(--role-color), 0.4), 0 10px 35px rgba(0, 0, 0, 0.15);
+          }
         }
       `}</style>
     </div>
   );
 
   // Student Info Page Component
+  
   const StudentInfoPage = () => {
     const [localInfo, setLocalInfo] = useState(studentInfo);
     
@@ -1166,39 +1612,6 @@ const RoleMatch = () => {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: theme.background }}>
         <div style={{ position: 'relative' }}>
-          {/* Navigation */}
-          <nav style={{ padding: '16px 24px', marginBottom: '16px' }}>
-            <div style={{ maxWidth: '84rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button
-                onClick={() => setCurrentPage('landing')}
-                style={{ 
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
-                  borderRadius: '12px',
-                  backgroundColor: theme.primaryContainer,
-                  color: theme.onPrimaryContainer,
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                <Home size={20} />
-                RoleMatch
-              </button>
-            </div>
-          </nav>
-
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.3 }}>
             <div style={{ 
               position: 'absolute', width: '400px', height: '400px', 
@@ -1604,15 +2017,15 @@ const RoleMatch = () => {
                         </div>
                       </button>
                       
-                      {/* Enhanced Character Animation - FIXED: Better positioning */}
+                      {/* Enhanced Character Animation with Speech Bubble */}
                       {selectedOption === option.roleKey && (
                         <div style={{
                           position: 'absolute', 
-                          right: '-140px', 
+                          right: '-160px', 
                           top: '50%',
                           transform: 'translateY(-50%)', 
                           zIndex: 1000,
-                          animation: 'character-entrance 1.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                          animation: 'character-entrance 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}>
                           <RoleCharacter 
                             roleKey={option.roleKey} 
@@ -1622,40 +2035,42 @@ const RoleMatch = () => {
                             showSparkles={true}
                           />
                           
-                          {/* Character speech bubble - FIXED: Better positioning */}
+                          {/* Enhanced speech bubble with personality-based messages */}
                           <div style={{
                             position: 'absolute',
-                            top: '-70px',
+                            top: '-80px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             backgroundColor: theme.surface,
-                            padding: '12px 16px',
-                            borderRadius: '16px',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
-                            border: `2px solid ${roles[option.roleKey].color}`,
-                            animation: 'speech-bubble 0.5s ease-out 0.4s both',
+                            padding: '16px 20px',
+                            borderRadius: '20px',
+                            boxShadow: `0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px ${roles[option.roleKey].color}40`,
+                            border: `3px solid ${roles[option.roleKey].color}`,
+                            animation: 'speech-bubble 0.8s ease-out 0.5s both',
                             whiteSpace: 'nowrap',
                             zIndex: 1001
                           }}>
                             <p style={{ 
                               color: theme.onSurface, 
-                              fontSize: '14px', 
-                              fontWeight: '600',
-                              margin: 0
+                              fontSize: '16px', 
+                              fontWeight: '700',
+                              margin: 0,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
                             }}>
-                              Great choice! 🎉
+                              {getPersonalityMessage(option.roleKey)}
                             </p>
-                            {/* Speech bubble arrow */}
+                            {/* Enhanced speech bubble arrow */}
                             <div style={{
                               position: 'absolute',
-                              bottom: '-8px',
+                              bottom: '-12px',
                               left: '50%',
                               transform: 'translateX(-50%)',
                               width: 0,
                               height: 0,
-                              borderLeft: '8px solid transparent',
-                              borderRight: '8px solid transparent',
-                              borderTop: `8px solid ${roles[option.roleKey].color}`
+                              borderLeft: '12px solid transparent',
+                              borderRight: '12px solid transparent',
+                              borderTop: `12px solid ${roles[option.roleKey].color}`,
+                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                             }} />
                           </div>
                         </div>
@@ -1729,29 +2144,215 @@ const RoleMatch = () => {
         </div>
 
         <style jsx>{`
-          @keyframes slideInBounce {
+          /* Enhanced quiz page animations */
+          @keyframes character-entrance {
             0% {
               opacity: 0;
-              transform: translateX(30px) translateY(-50%) scale(0.8);
+              transform: translateY(-50%) scale(0.3) rotate(-20deg);
+            }
+            30% {
+              opacity: 0.8;
+              transform: translateY(-50%) scale(1.4) rotate(15deg);
             }
             60% {
               opacity: 1;
-              transform: translateX(-5px) translateY(-50%) scale(1.1);
+              transform: translateY(-50%) scale(0.8) rotate(-8deg);
+            }
+            80% {
+              opacity: 1;
+              transform: translateY(-50%) scale(1.2) rotate(5deg);
             }
             100% {
               opacity: 1;
-              transform: translateX(0) translateY(-50%) scale(1);
+              transform: translateY(-50%) scale(1) rotate(0deg);
+            }
+          }
+          
+          @keyframes speech-bubble {
+            0% {
+              opacity: 0;
+              transform: translateX(-50%) scale(0.4) translateY(30px) rotate(-10deg);
+            }
+            40% {
+              opacity: 0.9;
+              transform: translateX(-50%) scale(1.3) translateY(-10px) rotate(5deg);
+            }
+            70% {
+              opacity: 1;
+              transform: translateX(-50%) scale(0.9) translateY(5px) rotate(-2deg);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(-50%) scale(1) translateY(0) rotate(0deg);
             }
           }
           
           @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
-            20%, 40%, 60%, 80% { transform: translateX(3px); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) rotate(-1deg); }
+            20%, 40%, 60%, 80% { transform: translateX(5px) rotate(1deg); }
+          }
+          
+          /* Personality-based character animations */
+          @keyframes character-think {
+            0%, 100% { 
+              transform: translateY(0) rotate(0deg) scale(1); 
+            }
+            25% { 
+              transform: translateY(-12px) rotate(-4deg) scale(1.03); 
+            }
+            50% { 
+              transform: translateY(-18px) rotate(0deg) scale(1.08); 
+            }
+            75% { 
+              transform: translateY(-8px) rotate(4deg) scale(1.03); 
+            }
+          }
+          
+          @keyframes character-organize {
+            0%, 100% { 
+              transform: translateY(0) scale(1) rotate(0deg); 
+            }
+            20% { 
+              transform: translateY(-6px) scale(1.04) rotate(-2deg); 
+            }
+            40% { 
+              transform: translateY(-12px) scale(1.08) rotate(2deg); 
+            }
+            60% { 
+              transform: translateY(-15px) scale(1.12) rotate(-1deg); 
+            }
+            80% { 
+              transform: translateY(-8px) scale(1.05) rotate(1deg); 
+            }
+          }
+          
+          @keyframes character-create-logic {
+            0%, 100% { 
+              transform: translateY(0) rotate(0deg) scale(1); 
+            }
+            16% { 
+              transform: translateY(-15px) rotate(-8deg) scale(1.06); 
+            }
+            33% { 
+              transform: translateY(-22px) rotate(12deg) scale(1.12); 
+            }
+            50% { 
+              transform: translateY(-25px) rotate(-10deg) scale(1.15); 
+            }
+            66% { 
+              transform: translateY(-18px) rotate(6deg) scale(1.1); 
+            }
+            83% { 
+              transform: translateY(-10px) rotate(-3deg) scale(1.05); 
+            }
+          }
+          
+          @keyframes character-create {
+            0%, 100% { 
+              transform: translateY(0) rotate(0deg) scale(1); 
+            }
+            12% { 
+              transform: translateY(-18px) rotate(-12deg) scale(1.1); 
+            }
+            25% { 
+              transform: translateY(-28px) rotate(15deg) scale(1.18); 
+            }
+            37% { 
+              transform: translateY(-35px) rotate(-18deg) scale(1.22); 
+            }
+            50% { 
+              transform: translateY(-32px) rotate(10deg) scale(1.25); 
+            }
+            62% { 
+              transform: translateY(-25px) rotate(-8deg) scale(1.15); 
+            }
+            75% { 
+              transform: translateY(-15px) rotate(5deg) scale(1.08); 
+            }
+            87% { 
+              transform: translateY(-8px) rotate(-2deg) scale(1.03); 
+            }
+          }
+          
+          @keyframes character-investigate {
+            0%, 100% { 
+              transform: translateY(0) scale(1) rotate(0deg); 
+            }
+            20% { 
+              transform: translateY(-8px) scale(1.08) rotate(-3deg); 
+            }
+            40% { 
+              transform: translateY(-16px) scale(1.15) rotate(3deg); 
+            }
+            60% { 
+              transform: translateY(-20px) scale(1.18) rotate(-2deg); 
+            }
+            80% { 
+              transform: translateY(-12px) scale(1.1) rotate(2deg); 
+            }
+          }
+          
+          @keyframes personality-spin {
+            0% { 
+              transform: rotate(0deg); 
+              opacity: 0.6; 
+            }
+            50% { 
+              opacity: 1; 
+            }
+            100% { 
+              transform: rotate(360deg); 
+              opacity: 0.6;
+            }
+          }
+          
+          @keyframes glow-rotate {
+            0% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.7;
+            }
+            25% { 
+              transform: rotate(90deg) scale(1.1); 
+              opacity: 1;
+            }
+            50% { 
+              transform: rotate(180deg) scale(1.05); 
+              opacity: 0.8;
+            }
+            75% { 
+              transform: rotate(270deg) scale(1.15); 
+              opacity: 1;
+            }
+            100% { 
+              transform: rotate(360deg) scale(1); 
+              opacity: 0.7;
+            }
+          }
+          
+          /* Character animation classes */
+          .character-think {
+            animation: character-think 3s ease-in-out infinite;
+          }
+          
+          .character-organize {
+            animation: character-organize 2.5s ease-in-out infinite;
+          }
+          
+          .character-create-logic {
+            animation: character-create-logic 4s ease-in-out infinite;
+          }
+          
+          .character-create {
+            animation: character-create 4.5s ease-in-out infinite;
+          }
+          
+          .character-investigate {
+            animation: character-investigate 3.2s ease-in-out infinite;
           }
           
           .character-sparkle {
-            animation: character-bounce 0.8s ease-in-out infinite;
+            animation: character-bounce 1.5s ease-in-out infinite;
           }
           
           .sparkles-container {
@@ -1762,36 +2363,152 @@ const RoleMatch = () => {
           
           .sparkle {
             position: absolute;
-            font-size: 16px;
-            animation: sparkle-float 2s ease-in-out infinite;
+            animation: sparkle-float 3s ease-in-out infinite;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
           }
           
           .sparkle-1 {
-            top: -10px;
-            right: -10px;
+            top: -25px;
+            right: -25px;
             animation-delay: 0s;
           }
           
           .sparkle-2 {
-            bottom: -10px;
-            left: -10px;
-            animation-delay: 0.7s;
+            bottom: -25px;
+            left: -25px;
+            animation-delay: 0.5s;
           }
           
           .sparkle-3 {
             top: 50%;
-            left: -15px;
-            animation-delay: 1.4s;
+            left: -30px;
+            animation-delay: 1s;
+          }
+          
+          .sparkle-4 {
+            top: -20px;
+            left: 50%;
+            animation-delay: 1.5s;
+          }
+          
+          .sparkle-5 {
+            bottom: -20px;
+            right: 50%;
+            animation-delay: 2s;
+          }
+          
+          .sparkle-6 {
+            top: 20%;
+            right: -25px;
+            animation-delay: 2.5s;
           }
           
           @keyframes sparkle-float {
             0%, 100% {
               opacity: 0;
-              transform: translateY(0) rotate(0deg) scale(0.5);
+              transform: translateY(0) rotate(0deg) scale(0.3);
+            }
+            20% {
+              opacity: 0.7;
+              transform: translateY(-12px) rotate(72deg) scale(0.8);
+            }
+            40% {
+              opacity: 1;
+              transform: translateY(-25px) rotate(144deg) scale(1.4);
+            }
+            60% {
+              opacity: 0.9;
+              transform: translateY(-30px) rotate(216deg) scale(1.6);
+            }
+            80% {
+              opacity: 0.6;
+              transform: translateY(-20px) rotate(288deg) scale(1.2);
+            }
+          }
+          
+          /* Personality dots */
+          .personality-dots {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+          }
+          
+          .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: dot-pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+          }
+          
+          .dot-1 { animation-delay: 0s; }
+          .dot-2 { animation-delay: 0.4s; }
+          .dot-3 { animation-delay: 0.8s; }
+          
+          @keyframes dot-pulse {
+            0%, 100% {
+              opacity: 0.3;
+              transform: scale(1);
             }
             50% {
               opacity: 1;
-              transform: translateY(-10px) rotate(180deg) scale(1);
+              transform: scale(1.8);
+            }
+          }
+          
+          /* Floating personality particles */
+          .personality-particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+          
+          .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: particle-float 4s ease-in-out infinite;
+          }
+          
+          .particle-1 {
+            top: 20%;
+            left: 20%;
+            animation-delay: 0s;
+          }
+          
+          .particle-2 {
+            top: 60%;
+            right: 25%;
+            animation-delay: 1.3s;
+          }
+          
+          .particle-3 {
+            bottom: 30%;
+            left: 70%;
+            animation-delay: 2.6s;
+          }
+          
+          @keyframes particle-float {
+            0%, 100% {
+              opacity: 0;
+              transform: translateY(0) scale(1);
+            }
+            25% {
+              opacity: 0.6;
+              transform: translateY(-15px) scale(1.5);
+            }
+            50% {
+              opacity: 1;
+              transform: translateY(-25px) scale(2);
+            }
+            75% {
+              opacity: 0.4;
+              transform: translateY(-35px) scale(1.2);
             }
           }
         `}</style>
@@ -1862,27 +2579,44 @@ const RoleMatch = () => {
                           isAnimated={true} 
                           isHovered={true}
                           size="large" 
+                          showSparkles={index === 0} // Only sparkles for #1 result
                         />
-                        {/* Rank badge */}
+                        {/* Enhanced rank badge with pulsing animation */}
                         <div style={{
                           position: 'absolute',
-                          top: '-8px',
-                          right: '-8px',
-                          width: '32px',
-                          height: '32px',
+                          top: '-12px',
+                          right: '-12px',
+                          width: '40px',
+                          height: '40px',
                           borderRadius: '50%',
                           backgroundColor: theme.primary,
                           color: theme.onPrimary,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '16px',
-                          fontWeight: '700',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                          zIndex: 2
+                          fontSize: '18px',
+                          fontWeight: '800',
+                          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+                          zIndex: 2,
+                          animation: index === 0 ? 'rank-pulse 2s ease-in-out infinite' : 'none'
                         }}>
                           {rec.rank}
                         </div>
+                        
+                        {/* Winner crown for #1 result */}
+                        {index === 0 && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '-25px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '24px',
+                            animation: 'crown-float 3s ease-in-out infinite',
+                            zIndex: 3
+                          }}>
+                            👑
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h3 style={{ 
@@ -1998,14 +2732,62 @@ const RoleMatch = () => {
       </div>
 
       <style jsx>{`
+        /* Results page enhanced animations */
         @keyframes slideInUp {
-          from { transform: translateY(30px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from { 
+            transform: translateY(50px); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateY(0); 
+            opacity: 1; 
+          }
         }
         
         @keyframes slideUpIn {
-          from { transform: translateX(-50%) translateY(100%); opacity: 0; }
-          to { transform: translateX(-50%) translateY(0); opacity: 1; }
+          from { 
+            transform: translateX(-50%) translateY(100%); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateX(-50%) translateY(0); 
+            opacity: 1; 
+          }
+        }
+        
+        /* Enhanced rank badge animation for winner */
+        @keyframes rank-pulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+          }
+          50% {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0, 100, 149, 0.5), 0 0 20px rgba(0, 100, 149, 0.3);
+          }
+        }
+        
+        /* Winner crown animation */
+        @keyframes crown-float {
+          0%, 100% {
+            transform: translateX(-50%) translateY(0) rotate(-3deg);
+          }
+          33% {
+            transform: translateX(-50%) translateY(-8px) rotate(3deg);
+          }
+          66% {
+            transform: translateX(-50%) translateY(-5px) rotate(-2deg);
+          }
+        }
+        
+        /* Enhanced progress bar animation */
+        @keyframes progress-fill {
+          from {
+            stroke-dashoffset: 283; /* 2 * π * 45 */
+          }
+          to {
+            stroke-dashoffset: 0;
+          }
         }
       `}</style>
     </div>
