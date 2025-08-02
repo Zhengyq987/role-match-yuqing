@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Download, Share2, RefreshCw, CheckCircle2, Info, Users, Zap, Target, Home, ArrowRight, Sparkles, Code, Palette, Settings, TestTube, User, Mail, CreditCard } from 'lucide-react';
+import { Player } from '@lottiefiles/react-lottie-player';
+import uxAnimation from './animations/UX.json';
+import cmAnimation from './animations/CM.json';
+import designAnimation from './animations/System.json';
+import testerAnimation from './animations/Tester.json';
+import reAnimation from './animations/RE.json';
 
 const RoleMatch = () => {
   const [currentPage, setCurrentPage] = useState('landing');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [results, setResults] = useState(null);
-  
+  const lottieRefs = useRef({});
+
   // Use system dark mode preference
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -148,6 +155,16 @@ const RoleMatch = () => {
     }
   };
 
+  //characters animations
+  const roleAnimations = {
+    UX: uxAnimation,
+    CM: cmAnimation,
+    RE: reAnimation,
+    Design: designAnimation,
+    Test: testerAnimation,
+  };
+
+  
   // Questions data
   const questions = [
     {
@@ -794,15 +811,36 @@ const RoleMatch = () => {
                         position: 'relative',
                         overflow: 'visible'
                       }}
-                      onMouseEnter={() => setHoveredRole(key)}
-                      onMouseLeave={() => setHoveredRole(null)}
+                      // onMouseEnter={() => setHoveredRole(key)}
+                      // onMouseLeave={() => setHoveredRole(null)}
+                      onMouseEnter={() => {
+  setHoveredRole(key);
+  lottieRefs.current[key]?.play();
+}}
+
+onMouseLeave={() => {
+  setHoveredRole(null);
+  lottieRefs.current[key]?.stop();
+}}
+
                     >
-                      <RoleCharacter 
+                      {/* <RoleCharacter 
                         roleKey={key} 
                         isAnimated={hoveredRole === key} 
                         isHovered={hoveredRole === key}
                         size="medium" 
+                      /> */}
+                      <Player
+                        ref={ref => (lottieRefs.current[key] = ref)}
+                        src={roleAnimations[key]}
+                        loop
+                        style={{
+                          width: '96px',
+                          height: '96px',
+                        }}
+                        autoplay={false}
                       />
+
                       <h4 style={{ 
                         color: theme.onSurface, 
                         marginTop: '28px', 
@@ -891,15 +929,37 @@ const RoleMatch = () => {
                         position: 'relative',
                         overflow: 'visible'
                       }}
-                      onMouseEnter={() => setHoveredRole(key)}
-                      onMouseLeave={() => setHoveredRole(null)}
+                      // onMouseEnter={() => setHoveredRole(key)}
+                      // onMouseLeave={() => setHoveredRole(null)}
+                      onMouseEnter={() => {
+  setHoveredRole(key);
+  lottieRefs.current[key]?.play();
+}}
+
+onMouseLeave={() => {
+  setHoveredRole(null);
+  lottieRefs.current[key]?.stop();
+}}
+
                     >
-                      <RoleCharacter 
+                      {/* <RoleCharacter 
                         roleKey={key} 
                         isAnimated={hoveredRole === key} 
                         isHovered={hoveredRole === key}
                         size="medium" 
+                      /> */}
+                      <Player
+                        ref={ref => (lottieRefs.current[key] = ref)}
+                        src={roleAnimations[key]}
+                        loop
+                        style={{
+                          width: '96px',
+                          height: '96px',
+                        }}
+                        autoplay={false}
                       />
+
+
                       <h4 style={{ 
                         color: theme.onSurface, 
                         marginTop: '28px', 
@@ -1796,6 +1856,29 @@ const RoleMatch = () => {
                 Start Assessment
                 <ArrowRight size={20} />
               </button>
+
+              <button
+                onClick={() => setCurrentPage('landing')}
+                style={{ 
+                  width: '100%', padding: '16px 24px', borderRadius: '9999px', fontWeight: '600', fontSize: '18px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', marginTop: '32px',
+                  backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                  boxShadow: '0 4px 20px rgba(0, 100, 149, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(0, 100, 149, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(0, 100, 149, 0.3)';
+                }}
+              >
+                Return to RoleMatch Home Page
+                <ArrowRight size={20} />
+              </button>
+
             </div>
           </div>
         </div>
@@ -2591,13 +2674,26 @@ const RoleMatch = () => {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                       <div style={{ position: 'relative' }}>
-                        <RoleCharacter 
+                        {/* <RoleCharacter 
                           roleKey={rec.role} 
                           isAnimated={true} 
                           isHovered={true}
                           size="large" 
                           showSparkles={index === 0} // Only sparkles for #1 result
+                        /> */}
+                        <Player
+                          autoplay
+                          loop
+                          src={roleAnimations[rec.role]}
+                          style={{
+                            width: '200px',
+                            height: '200px',
+                            background: 'transparent', 
+                            borderRadius: '0px',        
+                            boxShadow: 'none'
+                          }}
                         />
+
                         {/* Enhanced rank badge with pulsing animation */}
                         <div style={{
                           position: 'absolute',
