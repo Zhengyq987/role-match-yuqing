@@ -2553,6 +2553,23 @@ const RoleMatch = () => {
               <RefreshCw size={20} />
               Retake Quiz
             </button>
+            <nav style={{ padding: '24px' }}>
+          <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button
+              onClick={() => setCurrentPage('landing')}
+              style={{ 
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '12px 24px', borderRadius: '12px',
+                backgroundColor: theme.primaryContainer, color: theme.onPrimaryContainer,
+                fontSize: '16px', fontWeight: '600', transition: 'all 0.3s ease',
+                border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <Home size={20} />
+              RoleMatch
+            </button>
+          </div>
+        </nav>
           </div>
 
           <div style={{ 
